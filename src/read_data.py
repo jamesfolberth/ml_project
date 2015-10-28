@@ -18,14 +18,30 @@ def read_data(filename=None):
 if __name__ == '__main__':
     
     # this is just an example of how to use read_data
+    #train_reader, test_reader = read_data()
+    #count = 10
+    #for row in train_reader:
+    #    for key, val in row.iteritems():
+    #        print (val)
+
+    #    count -= 1
+    #    if count < 0:
+    #        break
+    
+    # compute the number of distinct answers
     train_reader, test_reader = read_data()
     
-    count = 10
+    train_answers = set()
     for row in train_reader:
-        for key, val in row.iteritems():
-            print (val)
+        for ans in (row["answerA"], row["answerB"], row["answerC"],\
+                row["answerD"]):
+            train_answers.add(ans)
 
-        count -= 1
-        if count < 0:
-            break
+    test_answers = set()
+    for row in test_reader:
+        for ans in (row["answerA"], row["answerB"], row["answerC"],\
+                row["answerD"]):
+            test_answers.add(ans)
+    
+    print (len(train_answers), len(test_answers), len(test_answers-train_answers))
 
