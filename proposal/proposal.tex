@@ -126,13 +126,13 @@ We are going to compete in the default science question answering project.  We d
 
 We are given training and testing data, and in addition we have access to a Kaggle competition where we can compete directly with other groups in class.  The training and test data consist of question strings and four possible answers (training data also includes which answer is correct), where each answer is an entity that has a corresponding Wikipedia page.  Since we know a priori what all the possible answers are, we should be able to cache the text of a few Wikipedia pages related to the answer strings.  Then the task is to ``correlate'' the question string with the text of the Wikipedia pages corresponding to the given answer strings, which will allow us to find the most highly ``correlated'' answer string.  Of course, we are not limited to using just Wikipedia pages, as there may be other data sources that could be of use.\\
 
-One of the hardest tasks of the project is finding useful features for both the question string and the Wikipedia pages that will allow us to compute a ``correlation''.  An obvious choice is to use a bag-of-words representation for each question string and Wikipedia page (i.e., the text of each Wikipedia page).  As we saw in the feature engineering homework, there are a number of tricks that we can use to boost the performance of the bag-of-words representation (e.g., stemming/lemmatization, TF-IDF, information gain feature selection).\\
+One of the hardest tasks of the project is finding useful features for both the question string and the Wikipedia pages that will allow us to compute a ``correlation''.  An obvious choice is to use a bag-of-words representation for each question string and Wikipedia page (i.e., the text of each Wikipedia page).  We will likely use $n$-grams and a list of stop words.  We might additionally weight heavily nouns and adjective-noun bigrams.  As we saw in the feature engineering homework, there are a number of tricks that we can use to boost the performance of the bag-of-words representation (e.g., stemming/lemmatization, TF-IDF, information gain feature selection).\\
 
-Once we have a compatible representation of question strings and answers/data, we need to determine which answer is the most probable.
+Once we have a compatible representation of question strings and answers/data, we need to determine which answer is the most probable.  For vectors in $\reals^n$, there are a number of similarity measures (e.g. cosine, Tanimoto).\\
 
-\textbf{TODO}
+Here are a few other ideas:
 \begin{itemize}
-   \item We could try to classify each question and answer into a ``genre'' (e.g. physics, math, chemistry, biology), which could help prune the set of answers.
+   \item We could try to classify each question and answer into a ``genre'' (e.g. physics, math, chemistry, biology), which could help prune the set of answers.  We could also pose this as a clustering problem, that way we don't have to label each genre.
    \item 
 \end{itemize}
 
