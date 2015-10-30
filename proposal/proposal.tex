@@ -130,6 +130,8 @@ One of the hardest tasks of the project is finding useful features for both the 
 
 Once we have a compatible representation of question strings and answers/data, we need to determine which answer is the most probable.  For vectors in $\reals^n$, there are a number of similarity measures (e.g. cosine, Tanimoto).\\
 
+A reasonable baseline we will use is using a one against all logistic regression.  The answers will be the classes.  The training question where a class is the correct answer will be a positive example for that class, and a training question where a class isn't the correct answer will be a negative example for that class.  With this, we can use cross-validation to develop a good baseline percentage to beat. \\
+
 Here are a few other ideas:
 \begin{itemize}
    \item We could try to classify each question and answer into a ``genre'' (e.g. physics, math, chemistry, biology), which could help prune the set of answers.  We could also pose this as a clustering problem, that way we don't have to label each genre.
