@@ -132,16 +132,17 @@ Once we have a compatible representation of question strings and answers/data, w
 
 A reasonable baseline we will use is using a one against all logistic regression.  The answers will be the classes.  The training question where a class is the correct answer will be a positive example for that class, and a training question where a class isn't the correct answer will be a negative example for that class.  With this, we can use cross-validation to develop a good baseline percentage to beat. \\
 
-Here are a few other ideas:
-\begin{itemize}
-   \item We could try to classify each question and answer into a ``genre'' (e.g. physics, math, chemistry, biology), which could help prune the set of answers.  We could also pose this as a clustering problem, that way we don't have to label each genre.
-   \item 
-\end{itemize}
+%Here are a few other ideas:
+%\begin{itemize}
+%   \item We could try to classify each question and answer into a ``genre'' (e.g. physics, math, chemistry, biology), which could help prune the set of answers.  We could also pose this as a clustering problem, that way we don't have to label each genre.
+%   \item Use PageRank to rank each Wikipedia page according to its Wikipedia links.  The page ranking could be used in a tie breaking scheme.
+%   \item  Use NLP to look for important nouns (e.g. proper nouns) and adjective-noun bigrams, which could be useful for ``classification''.
+%\end{itemize}
 
 References:\\
 \problemline
 \begin{itemize}
-   \item https://pypi.python.org/pypi/wikipedia/
+   \item \url{https://pypi.python.org/pypi/wikipedia/}
 \end{itemize}
 
 % References
