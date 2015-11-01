@@ -1,11 +1,20 @@
+"""
+A simple front-end to read sci_train.csv and sci_test.csv
+"""
 
 import csv
-import cPickle as pickle
 
 FIELDNAMES = ("id", "question", "correctAnswer", "answerA",\
     "answerB", "answerC", "answerD")
 
 def read_data(filename=None):
+    """
+    If a filename is given, open that filename with a csv.DictReader
+
+    If no filename is given, attempt to open the train and test files
+    as csv.DictReaders and return both.
+    """
+
     if filename:
         return csv.DictReader(open(filename, 'r'))
 
