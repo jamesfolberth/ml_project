@@ -61,7 +61,6 @@ FIXED_ANSWERS = {'Accretion disc': u'Accretion disk',
         'Ziegler-Natta catalyst': u'Ziegler\u2013Natta catalyst',
         'G protein-coupled receptor': u'G protein\u2013coupled receptor',
         'Henderson-Hasselbalch equation': u'Henderson\u2013Hasselbalch equation',
-        'Time': u'Time',
         'Claude Levi-Strauss': u'Claude L\xe9vi-Strauss',
         'Rain, Steam and Speed - The Great Western Railway': u'Rain, Steam and Speed \u2013 The Great Western Railway',
         'Vermiform appendix': u'Appendix (anatomy)',
@@ -91,9 +90,15 @@ FIXED_ANSWERS = {'Accretion disc': u'Accretion disk',
         'Franck-Hertz experiment': u'Franck\u2013Hertz experiment',
         'Mossbauer effect': u'M\xf6ssbauer effect',
         'D orbitals': u'Atomic orbital',
-        'Nyquist-Shannon sampling theorem': u'Nyquist\u2013Shannon sampling theorem'}
+        'Nyquist-Shannon sampling theorem': u'Nyquist\u2013Shannon sampling theorem',
+        'Hyperbolic': 'Hyperbola',
+        'Lagrangian': 'Lagrangian mechanics'}
 
-ANSWER_TO_PAGEID = {'Pascal (programming language)': 23773}
+ANSWER_TO_PAGEID = {'Pascal (programming language)': 23773,
+        'C (programming language)': 6877836,
+        'Java (programming language)': 6877888,
+        'Time': 30012,
+        'Bremsstrahlung': 48427746}
 # }}}
 
 def read_answers():
@@ -239,14 +244,64 @@ def get_wiki_data(answers, pkl_file, delay=50000):
             print (u"wiki issues with page (title={})".format(title))
             print (e)
 
+        except Exception as e:
+            print ("something else bad has happened!")
+            print (e)
+
+
+def clean_wiki_pages(pkl_file, answers=None):
+    """
+    Remove duplicates from wiki pages pickle file.  Keep the highest index
+    (closest to end) for non-unique elements.  Uniquity is measured only
+    by the title of the page.
+
+    Args:
+        pkl_file: file used to store pickled output
+
+        answers=None: see which titles we don't have
+
+    Returns:
+        None
+    """
+
+    pages = []
+    if os.path.isfile(pkl_file):
+        with open(pkl_file, 'rb') as f:
+            try:
+                pages = pickle.load(f)
+            except Exception: # if nothing gets loaded/bad file descriptor
+                pass 
+  
+    if pages:
+        unique_pages = [] # uniqueness is measured by title
+        unique_titles = set()
+        if answers:
+            missing_pages = set(answers)
+        else:
+            missing_pages = set()
+
+        for page in reversed(pages):
+            title = page['title']
+            if title not in unique_titles:
+                unique_pages.append(page)
+                unique_titles.add(title)
+                missing_pages.discard(title)
+        
+        pickle.dump(unique_pages, open(pkl_file, 'wb'), pickle.HIGHEST_PROTOCOL)
+        
+        print ("missing pages: ")
+        print (missing_pages)
+
 
 if __name__ == '__main__':
     answers = read_answers()
     
     #get_bad_answers(answers)
     
-    # these answers correspond directly to pages, so we 
+    # these answers correspond directly to pages, so we try to fix them manually
     updated_answers = [FIXED_ANSWERS[ans] if ans in FIXED_ANSWERS.keys() else ans for ans in read_answers()]
     
     get_wiki_data(updated_answers, '../data/wiki_pages.pkl')
+    
+    clean_wiki_pages('../data/wiki_pages.pkl', answers=updated_answers)
 
