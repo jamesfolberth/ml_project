@@ -1,0 +1,42 @@
+page 250 of 1260 (title=Hyperbolic)
+/usr/lib/python2.7/site-packages/bs4/__init__.py:166: UserWarning: No parser was explicitly specified, so I'm using the best available HTML parser for this system ("html.parser"). This usually isn't a problem, but if you run this code on another system, or in a different virtual environment, it may use a different parser and behave differently.
+
+To get rid of this warning, change this:
+
+ BeautifulSoup([your markup])
+
+to this:
+
+ BeautifulSoup([your markup], "html.parser")
+
+  markup_type=markup_type))
+wiki issues with page (title=Hyperbolic)
+"Hyperbolic" may refer to: 
+Hyperbolic distribution
+Hyperbolic equilibrium point
+Hyperbolic function
+Hyperbolic geometry
+Hyperbolic group
+Hyperbolic growth
+Hyperbolic manifold
+Hyperbolic navigation
+Hyperbolic paraboloid
+Hyperbolic partial differential equation
+hyperbolic plane 
+hyperbolic plane 
+ hyperbolic plane
+surface
+hyperboloid
+Hyperbolic space
+Hyperbolic trajectory
+Exaggeration
+Hyperboloid
+Hyperboloid structure
+
+
+page 429 of 1260 (title=Java (programming language))
+wiki issues with page (title=Java (programming language))
+Page id "java programming langauge" does not match any pages. Try another id!
+
+
+

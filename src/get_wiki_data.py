@@ -93,6 +93,7 @@ FIXED_ANSWERS = {'Accretion disc': u'Accretion disk',
         'D orbitals': u'Atomic orbital',
         'Nyquist-Shannon sampling theorem': u'Nyquist\u2013Shannon sampling theorem'}
 
+ANSWER_TO_PAGEID = {'Pascal (programming language)': 23773}
 # }}}
 
 def read_answers():
@@ -210,19 +211,33 @@ def get_wiki_data(answers, pkl_file, delay=50000):
     # download wiki pages
     for i, title in enumerate(pages_todo):
         print (u"page {} of {} (title={})".format(i+1, len(pages_todo), title))
-
-        page = wiki.page(title=title)
         
-        # get the page data and store it in a dict
-        dict_page = dict()
-        for key in PAGE_KEYS:
-            try_page_property(dict_page, page, key) 
+        try:
+            #XXX even though we checked for bad pages, this sometimes raises
+            # an exception.  For example, we could do 
+            # title=u"Pascal (programming language)", but still get a PageError
+            # saying Page id "pascal programming langauge" does not match any
+            # pages. We can manually look up the Mediawiki pageid (using their API)
+            # and look up the page using that 
+            if title in ANSWER_TO_PAGEID.keys():
+                page = wiki.page(pageid=ANSWER_TO_PAGEID[title])
+            else:
+                page = wiki.page(title=title)
+            
+            # get the page data and store it in a dict
+            dict_page = dict()
+            for key in PAGE_KEYS:
+                try_page_property(dict_page, page, key) 
 
-        pages.append(dict_page)
-        
-        # dumping each time is safe, but slow
-        # TODO: how safe is this?
-        pickle.dump(pages, open(pkl_file, 'wb'), pickle.HIGHEST_PROTOCOL)
+            pages.append(dict_page)
+            
+            # dumping each time is safe, but slow
+            # TODO: how safe is this?
+            pickle.dump(pages, open(pkl_file, 'wb'), pickle.HIGHEST_PROTOCOL)
+
+        except wiki.exceptions.WikipediaException as e:
+            print (u"wiki issues with page (title={})".format(title))
+            print (e)
 
 
 if __name__ == '__main__':
