@@ -21,6 +21,10 @@ PAGE_KEYS = ('title', 'summary', 'content', 'links', 'categories', 'sections')
 # These answers don't have an _exactly_ corresponding Wiki page.
 # Could be different spellings and/or encoding issues
 # Most of these can be fixed by taking the first result 
+#
+# There are some typos somewhere in the chain of data.  For example, we have
+# Bremsstrahlung radiation and Bremstralung radiation in our dataset...
+
 # {{{
 BAD_ANSWERS = [(9, 'Accretion disc'), (62, 'Eigenvalue'), (80, 'Bose-Einstein condensate'), (88, 'Erythrocyte'), (149, 'Cu Chulainn'), (151, 'Tyr'), (154, 'Lisp'), (157, 'Secant function'), (163, 'Even number'), (170, 'Jahn-Teller effect'), (206, 'Quark-gluon plasma'), (223, 'Cosine'), (233, 'Aluminum'), (264, 'E2 reaction'), (306, 'Thermoelectric effect#Seebeck effect'), (316, 'Stern-Gerlach experiment'), (330, 'Colon (anatomy)'), (331, 'Reduction (chemistry)'), (351, 'Hans Christian Orsted'), (369, 'Mohorovicic discontinuity'), (397, 'Tang Dynasty'), (523, 'Electrical resistance'), (545, 'Mossbauer spectroscopy'), (549, 'Myelin sheath gap'), (597, 'Joule-Thomson effect'), (605, 'Creutzfeldt-Jakob disease'), (678, 'Light-independent reactions#Calvin Cycle'), (693, 'Clausius-Clapeyron relation'), (750, 'Gibbs-Duhem equation'), (777, 'Epstein-Barr virus'), (778, 'Meselson-Stahl experiment'), (781, 'Navier-Stokes equations'), (782, 'Born-Oppenheimer approximation'), (801, 'Church-Turing thesis'), (812, 'Ziegler-Natta catalyst'), (813, 'G protein-coupled receptor'), (816, 'Henderson-Hasselbalch equation'), (824, 'Time'), (864, 'Claude Levi-Strauss'), (891, 'Rain, Steam and Speed - The Great Western Railway'), (892, 'Vermiform appendix'), (917, 'Debye-Huckel equation'), (921, 'Rene Descartes'), (947, 'Lewis acid'), (953, 'Davisson-Germer experiment'), (955, 'Redlich-Kwong equation of state'), (995, 'Diels-Alder reaction'), (1019, 'Galapagos Islands'), (1026, 'Eugene Ionesco'), (1047, 'Friedel-Crafts reaction'), (1049, 'Acid-base reaction'), (1055, 'Stress-energy tensor'), (1056, 'Jons Jacob Berzelius'), (1069, 'Magnetic potential#Magnetic vector potential'), (1118, 'Tay-Sachs disease'), (1120, 'Convergence (mathematics)'), (1122, '3'), (1141, 'Ming Dynasty'), (1165, 'Gd T cells'), (1217, 'Michelson-Morley experiment'), (1233, 'Winds'), (1247, 'Epidermis (skin)'), (1277, 'Hall-Heroult process'), (1335, 'Wolff-Kishner reduction'), (1351, 'Franck-Hertz experiment'), (1394, 'Mossbauer effect'), (1401, 'D orbitals'), (1410, 'Nyquist-Shannon sampling theorem')]
 
@@ -92,13 +96,18 @@ FIXED_ANSWERS = {'Accretion disc': u'Accretion disk',
         'D orbitals': u'Atomic orbital',
         'Nyquist-Shannon sampling theorem': u'Nyquist\u2013Shannon sampling theorem',
         'Hyperbolic': 'Hyperbola',
-        'Lagrangian': 'Lagrangian mechanics'}
+        'Lagrangian': 'Lagrangian mechanics',
+        'Bremsstrahlung': 'Bremsstrahlung radiation'}
 
 ANSWER_TO_PAGEID = {'Pascal (programming language)': 23773,
-        'C (programming language)': 6877836,
+        'C (programming language)': 7004623,
         'Java (programming language)': 6877888,
         'Time': 30012,
         'Bremsstrahlung': 48427746}
+
+ANSWER_TO_PAGEID = {'Pascal (programming language)': 23773,
+        'Time': 30012}
+
 # }}}
 
 def read_answers():
@@ -227,13 +236,14 @@ def get_wiki_data(answers, pkl_file, delay=50000):
             if title in ANSWER_TO_PAGEID.keys():
                 page = wiki.page(pageid=ANSWER_TO_PAGEID[title])
             else:
-                page = wiki.page(title=title)
+                page = wiki.page(title=title, auto_suggest=False)
             
             # get the page data and store it in a dict
             dict_page = dict()
             for key in PAGE_KEYS:
                 try_page_property(dict_page, page, key) 
-
+            
+            print (page.title)
             pages.append(dict_page)
             
             # dumping each time is safe, but slow
@@ -280,7 +290,7 @@ def clean_wiki_pages(pkl_file, answers=None):
         else:
             missing_pages = set()
 
-        for page in reversed(pages):
+        for page in pages:
             title = page['title']
             if title not in unique_titles:
                 unique_pages.append(page)
