@@ -1,6 +1,5 @@
 import cPickle as pickle
 from collections import defaultdict
-import json
 
 pages = pickle.load(open('../wiki_pages.pkl', 'rb'))
 correct = pickle.load(open('../correct.pkl', 'rb'))
