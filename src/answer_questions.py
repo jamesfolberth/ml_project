@@ -21,5 +21,5 @@ if __name__ == "__main__":
     args = argparser.parse_args()
 
     #make_predictions(args)
-    run_development(args)
+    #run_development(args)
 

@@ -7,7 +7,7 @@ import csv
 FIELDNAMES = ("id", "question", "correctAnswer", "answerA",\
     "answerB", "answerC", "answerD")
 
-def read_data(filename=None):
+def read_csv_data(filename=None):
     """
     If a filename is given, open that filename with a csv.DictReader
 
@@ -26,8 +26,8 @@ def read_data(filename=None):
 
 if __name__ == '__main__':
     
-    # this is just an example of how to use read_data
-    #train_reader, test_reader = read_data()
+    # this is just an example of how to use read_csv_data
+    #train_reader, test_reader = read_csv_data()
     #count = 10
     #for row in train_reader:
     #    for key, val in row.iteritems():
@@ -38,7 +38,7 @@ if __name__ == '__main__':
     #        break
     
     # compute the number of distinct answers
-    train_reader, test_reader = read_data()
+    train_reader, test_reader = read_csv_data()
     
     train_answers = set()
     for row in train_reader:

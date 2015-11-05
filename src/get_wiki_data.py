@@ -14,16 +14,13 @@ except:
     raise ImportWarning('Using pickle instead of cPickle; pickle might be slower.') 
     import pickle
 
-import read_data
+import read_csv_data
 
 PAGE_KEYS = ('title', 'summary', 'content', 'links', 'categories', 'sections')
 
 # These answers don't have an _exactly_ corresponding Wiki page.
 # Could be different spellings and/or encoding issues
 # Most of these can be fixed by taking the first result 
-#
-# There are some typos somewhere in the chain of data.  For example, we have
-# Bremsstrahlung radiation and Bremstralung radiation in our dataset...
 
 # {{{
 BAD_ANSWERS = [(9, 'Accretion disc'), (62, 'Eigenvalue'), (80, 'Bose-Einstein condensate'), (88, 'Erythrocyte'), (149, 'Cu Chulainn'), (151, 'Tyr'), (154, 'Lisp'), (157, 'Secant function'), (163, 'Even number'), (170, 'Jahn-Teller effect'), (206, 'Quark-gluon plasma'), (223, 'Cosine'), (233, 'Aluminum'), (264, 'E2 reaction'), (306, 'Thermoelectric effect#Seebeck effect'), (316, 'Stern-Gerlach experiment'), (330, 'Colon (anatomy)'), (331, 'Reduction (chemistry)'), (351, 'Hans Christian Orsted'), (369, 'Mohorovicic discontinuity'), (397, 'Tang Dynasty'), (523, 'Electrical resistance'), (545, 'Mossbauer spectroscopy'), (549, 'Myelin sheath gap'), (597, 'Joule-Thomson effect'), (605, 'Creutzfeldt-Jakob disease'), (678, 'Light-independent reactions#Calvin Cycle'), (693, 'Clausius-Clapeyron relation'), (750, 'Gibbs-Duhem equation'), (777, 'Epstein-Barr virus'), (778, 'Meselson-Stahl experiment'), (781, 'Navier-Stokes equations'), (782, 'Born-Oppenheimer approximation'), (801, 'Church-Turing thesis'), (812, 'Ziegler-Natta catalyst'), (813, 'G protein-coupled receptor'), (816, 'Henderson-Hasselbalch equation'), (824, 'Time'), (864, 'Claude Levi-Strauss'), (891, 'Rain, Steam and Speed - The Great Western Railway'), (892, 'Vermiform appendix'), (917, 'Debye-Huckel equation'), (921, 'Rene Descartes'), (947, 'Lewis acid'), (953, 'Davisson-Germer experiment'), (955, 'Redlich-Kwong equation of state'), (995, 'Diels-Alder reaction'), (1019, 'Galapagos Islands'), (1026, 'Eugene Ionesco'), (1047, 'Friedel-Crafts reaction'), (1049, 'Acid-base reaction'), (1055, 'Stress-energy tensor'), (1056, 'Jons Jacob Berzelius'), (1069, 'Magnetic potential#Magnetic vector potential'), (1118, 'Tay-Sachs disease'), (1120, 'Convergence (mathematics)'), (1122, '3'), (1141, 'Ming Dynasty'), (1165, 'Gd T cells'), (1217, 'Michelson-Morley experiment'), (1233, 'Winds'), (1247, 'Epidermis (skin)'), (1277, 'Hall-Heroult process'), (1335, 'Wolff-Kishner reduction'), (1351, 'Franck-Hertz experiment'), (1394, 'Mossbauer effect'), (1401, 'D orbitals'), (1410, 'Nyquist-Shannon sampling theorem')]
@@ -99,11 +96,23 @@ FIXED_ANSWERS = {'Accretion disc': u'Accretion disk',
         'Lagrangian': 'Lagrangian mechanics',
         'Bremsstrahlung': 'Bremsstrahlung radiation'}
 
-ANSWER_TO_PAGEID = {'Pascal (programming language)': 23773,
-        'C (programming language)': 7004623,
-        'Java (programming language)': 6877888,
-        'Time': 30012,
-        'Bremsstrahlung': 48427746}
+
+# This has issues if there are multiple pages that get ``fixed''
+# to the same page (e.g. secand function and cosine)
+#FIXED_ANSWERS_INV = {val: key for key,val in FIXED_ANSWERS.iteritems()}
+
+FIXED_ANSWERS_INV = dict()
+for key,val in FIXED_ANSWERS.iteritems():
+    if val in FIXED_ANSWERS_INV:
+        FIXED_ANSWERS_INV[val].append(key)
+    else:
+        FIXED_ANSWERS_INV[val] = [key]
+
+#ANSWER_TO_PAGEID = {'Pascal (programming language)': 23773,
+#        'C (programming language)': 7004623,
+#        'Java (programming language)': 6877888,
+#        'Time': 30012,
+#        'Bremsstrahlung': 48427746}
 
 ANSWER_TO_PAGEID = {'Pascal (programming language)': 23773,
         'Time': 30012}
@@ -121,7 +130,7 @@ def read_answers():
     Returns:
         list of distinct answer strings
     """
-    train_reader, test_reader = read_data.read_data()
+    train_reader, test_reader = read_csv_data.read_csv_data()
     
     train_answers = set()
     for row in train_reader:
@@ -271,7 +280,7 @@ def clean_wiki_pages(pkl_file, answers=None):
         answers=None: see which titles we don't have
 
     Returns:
-        None
+        missing_pages: set of answers with no matching page
     """
 
     pages = []
@@ -282,25 +291,99 @@ def clean_wiki_pages(pkl_file, answers=None):
             except Exception: # if nothing gets loaded/bad file descriptor
                 pass 
   
-    if pages:
-        unique_pages = [] # uniqueness is measured by title
-        unique_titles = set()
-        if answers:
-            missing_pages = set(answers)
-        else:
-            missing_pages = set()
+    unique_pages = [] # uniqueness is measured by title
+    unique_titles = set()
+    if answers:
+        missing_pages = set(answers)
+    else:
+        missing_pages = set()
 
+    for page in pages:
+        title = page['title']
+        if title not in unique_titles:
+            unique_pages.append(page)
+            unique_titles.add(title)
+            missing_pages.discard(title)
+    
+    pickle.dump(unique_pages, open(pkl_file, 'wb'), pickle.HIGHEST_PROTOCOL)
+    
+    return missing_pages
+
+
+def make_pages_dict(answers, pages_pkl_file, dict_pkl_file):
+    """
+    Make a dictionary mapping answer string to wiki page data.
+    Ensure that each answer corresponds to the correct page.
+
+    Args:
+        answers: list of answers coming from CSV data
+        pages_pkl_file: file with list of wiki pages
+        dict_pkl_file: where to save the dict
+
+    Returns:
+        None
+    """
+     
+    pages = []
+    if os.path.isfile(pages_pkl_file):
+        with open(pages_pkl_file, 'rb') as f:
+            try:
+                pages = pickle.load(f)
+            except Exception: # if nothing gets loaded/bad file descriptor
+                pass 
+    
+    answers_set = frozenset(answers)
+    found_answers = set()
+    pages_dict = dict()
+    if pages:
         for page in pages:
-            title = page['title']
-            if title not in unique_titles:
-                unique_pages.append(page)
-                unique_titles.add(title)
-                missing_pages.discard(title)
+            
+            # sometimes there exists a page in answers_set _and_ in FIXED_...
+            bad_title = True
+            if page['title'] in answers_set:
+                pages_dict[page['title']] = page
+                found_answers.add(page['title'])
+                bad_title = False
+
+            if page['title'] in FIXED_ANSWERS_INV:
+                found_ans = False
+                for ans in FIXED_ANSWERS_INV[page['title']]:
+                    if ans in answers_set:
+                        pages_dict[ans] = page
+                        found_answers.add(ans)
+                        found_ans = True
+                        bad_title = False
+
+                if not found_ans:
+                    print ("FAI: " + page['title'])
+
+
+            if bad_title:
+                print ("title without answer: " + page['title'])
+
+    pickle.dump(pages_dict, open(dict_pkl_file, 'wb'), pickle.HIGHEST_PROTOCOL)
+
+
+def check_pages_dict(answers, dict_pkl_file):
+    """
+    Ensure that CSV answers are keys by iterating through all answers
+
+    Args:
+        answers: list of answers from CSV files
+        dict_pkl_file: file with dictionary mapping answers to wiki page data
+
+    Returns:
+        no_matches: set of answers with no matching entry
+    """
         
-        pickle.dump(unique_pages, open(pkl_file, 'wb'), pickle.HIGHEST_PROTOCOL)
-        
-        print ("missing pages: ")
-        print (missing_pages)
+    pages_dict = pickle.load(open(dict_pkl_file, 'rb'))
+    
+    no_matches = set()
+    for ans in answers:
+        if not ans in pages_dict:
+            no_matches.add(ans)
+
+    return no_matches
 
 
 if __name__ == '__main__':
@@ -311,7 +394,26 @@ if __name__ == '__main__':
     # these answers correspond directly to pages, so we try to fix them manually
     updated_answers = [FIXED_ANSWERS[ans] if ans in FIXED_ANSWERS.keys() else ans for ans in read_answers()]
     
+    # do the hard work
     get_wiki_data(updated_answers, '../data/wiki_pages.pkl')
+
+
+    missing_pages = clean_wiki_pages('../data/wiki_pages.pkl', answers=updated_answers)
+    if missing_pages:
+        print ("missing pages: ")
+        print (missing_pages)
+    else:
+        print ("No missing pages")
+
     
-    clean_wiki_pages('../data/wiki_pages.pkl', answers=updated_answers)
+    make_pages_dict(answers, '../data/wiki_pages.pkl', '../data/wiki_pages_dict.pkl')
+
+
+    no_matches = check_pages_dict(answers, '../data/wiki_pages_dict.pkl')
+    if not no_matches:
+        print ("All answers have a corresponding entry in pages_dict!")
+    else:
+        print ("No entry for the following answers:")
+        print (no_matches)
+ 
 
