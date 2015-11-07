@@ -25,17 +25,21 @@ class Analyzer:
         base_feats = feat_string.split(TOKENSEP)
         
         # make ngrams from lemmatized words
-        #for n in xrange(self.min_ngram, self.max_ngram+1):
-        #    for ng in nltk.ngrams([bf for bf in base_feats if bf.startswith("LEMM:") and bf[5:].lower() not in self.stop_words], n):
-        #        s = ' '.join(map(lambda s: s.strip("LEMM:"), ng))
-        #        if len(ng) > 1:
-        #            yield s
-        #        else: # only strip stop words for 1-grams
-        #            if s not in self.stop_words:
-        #                yield s
+        for n in xrange(self.min_ngram, self.max_ngram+1):
+            for ng in nltk.ngrams([bf for bf in base_feats if bf.startswith("LEMM:") and bf[5:].lower() not in self.stop_words], n):
+                s = ' '.join(map(lambda s: s.strip("LEMM:"), ng))
+                if len(ng) > 1:
+                    yield s
+                else: # only strip stop words for 1-grams
+                    if s not in self.stop_words:
+                        yield s
         
         # use the original words, but not stop words
-        for bf in [bf for bf in base_feats if bf.startswith("ORIG:") and bf[5:].lower() not in self.stop_words]:
+        #for bf in [bf for bf in base_feats if bf.startswith("ORIG:") and bf[5:].lower() not in self.stop_words]:
+        #    yield bf
+        
+        # this will overlap with ORIG:, but if we don't use ORIG, then it'll work
+        for bf in [bf for bf in base_feats if bf.startswith("NNP:")]:
             yield bf
 
         #for bf in [bf for bf in base_feats if bf.startswith("TENSE:")]:
@@ -57,7 +61,6 @@ class Featurizer:
         self.psummary = {}
         self.psections = {}
         
-        #TODO: can directly use TF-IDF vectorizer
         #self.vectorizer = sklearn.feature_extraction.text.CountVectorizer(\
         #        min_df=0.0, max_df=0.5, max_features=75000, analyzer=self.analyzer)
         self.vectorizer = sklearn.feature_extraction.text.TfidfVectorizer(\
@@ -65,8 +68,21 @@ class Featurizer:
         
 
     @staticmethod
-    def process_text(text):
-         
+    def process_text(text, pos_tag="good"):
+        """
+        Lemmatize and POS tag a chunk of text to be used later to build a feature vector.
+
+        Args:
+            text: document string (either question or Wiki page summary, content, etc.)
+
+            pos_tag="good": which POS tagger to use.
+                "good" - nltk.pos_tag, which is slow
+                "bad" - assume everything is a noun, which is stupid
+
+        Returns:
+            feat_string: tokenized string of features.  
+                Tokens are separated by similarity.TOKENSEP.
+        """
         # set up some vars
         wnl = nltk.stem.WordNetLemmatizer()                
         
@@ -90,9 +106,12 @@ class Featurizer:
         tokens = [token for token in tokens if token not in \
                 frozenset((".","?","!",",",":",";","$","\"","(",")","[","]","{","}","`",""))]
         
-        # XXX lemmatizing settings; use the stupid one to save some time
-        #tokens_pos = nltk.pos_tag(tokens) # (this is _slow_)
-        tokens_pos = [('','n')]*len(tokens) # (this is stupid)
+        if pos_tag == "good":
+            tokens_pos = nltk.pos_tag(tokens) # this is _slow_
+        elif pos_tag == "bad":
+            tokens_pos = [('','n')]*len(tokens) # this is stupid
+        else:
+            raise ValueError("pos_tag={} is not recognized".format(pos_tag))
 
         added_synsets = set()
         for token_ind, token in enumerate(tokens):
@@ -102,13 +121,13 @@ class Featurizer:
             original_tokens += "ORIG:" + token + TOKENSEP
             
             # Lemmatize things
-            #TODO: we probably want to weight proper nouns very heavily, if we can find them
             token_wn_pos = tokens_pos[token_ind][1].lower()[0] # taking first char from upenn tag to use in wordnet
             if token_wn_pos in set(['n','v','a']):
                 lemmatized_token = wnl.lemmatize(token, pos=token_wn_pos)
             else:
                 lemmatized_token = token
 
+            #TODO: we probably want to weight proper nouns very heavily, if we can find them
             if tokens_pos[token_ind][1][0:3] == "NNP": # proper noun (singular or plural)
                 additional_tokens += "NNP:" + token.lower() + TOKENSEP
 
@@ -117,16 +136,29 @@ class Featurizer:
         return original_tokens + new_tokens + additional_tokens
 
         
-    def compute_features(self, questions):
+    def compute_feat_strings(self, questions, print_info=False):
+        """
+        Compute a list of feature strings (parse with Analyzer) for each question and answer.
+
+        Args:
+            questions: list of question dicts
+            
+            print_info=False: print current iterate and total number
+
+        Returns:
+            feat_strings: list of feature strings
+            feat_vocab: dict mapping question 'id' or answer string to index of feat_strings
+        """
         feat_vocab = {}
         feat_ind = 0
         feat_strings = [] # collect all feature strings to build the feature matrix
         for ind, q in enumerate(questions):
-            print ("\rquestion {:>06d} of {:>06d}".format(ind+1, len(questions))),
+            if print_info:
+                print ("\rquestion {:>06d} of {:>06d}".format(ind+1, len(questions))),
             sys.stdout.flush()
             
             if q['id'] not in self.pquestions:
-                self.pquestions[q['id']] = self.process_text(q['question'])
+                self.pquestions[q['id']] = self.process_text(q['question'], pos_tag="bad")
 
                 feat_vocab[q['id']] = feat_ind
                 feat_strings.append(self.pquestions[q['id']])
@@ -136,13 +168,16 @@ class Featurizer:
 
 
             for ans in (q['answerA'], q['answerB'], q['answerC'], q['answerD']):
+                feat_string = ""
                 #if ans not in self.pcontent:
                 #    self.pcontent[ans] = self.process_text(\
-                #            self.wiki_pages_dict[ans]['content'])
+                #            self.wiki_pages_dict[ans]['content'], pos_tag="bad")
+                #    feat_string += self.pcontent[ans] + TOKENSEP
 
                 if ans not in self.psummary:
                     self.psummary[ans] = self.process_text(\
-                            self.wiki_pages_dict[ans]['summary'])
+                            self.wiki_pages_dict[ans]['summary'], pos_tag="bad")
+                    feat_string += self.psummary[ans] + TOKENSEP
 
                 #if ans not in self.psections: # this is completely untested
                 #    self.psections[ans] = self.process_text(\
@@ -150,13 +185,35 @@ class Featurizer:
                 
                 if ans not in feat_vocab:
                     feat_vocab[ans] = feat_ind
-                    feat_strings.append(self.psummary[ans])                    
+                    feat_strings.append(feat_string)                    
                     feat_ind += 1
-
-        print ("\r")
         
-        feat_mat = self.vectorizer.fit_transform(feat_strings)
-        return feat_mat, feat_vocab
+        if print_info:
+            print ("\r")
+        
+        return feat_strings, feat_vocab
+
+    
+    def compute_feats(self, feat_strings, test=False):
+        """
+        Use analyzer to parse feature strings and build a feature matrix.
+
+        Args:
+            feat_strings: list of feature strings
+
+            test=False: whether to use fit_transform or transform
+
+        Returns:
+            feat_mat: n_strings x n_feat matrix of feature vectors
+
+                One can access the feature names via self.vectorizer.get_feature_names()
+        """
+        if not test:
+            feat_mat = self.vectorizer.fit_transform(feat_strings)
+        else:
+            feat_mat = self.vectorizer.transform(feat_strings)
+
+        return feat_mat
 
 
 class Scorer:
@@ -191,36 +248,51 @@ class Scorer:
     
     @staticmethod
     def cosine(qv, av):
-        # numpy + sparse sucks...
-        #score = np.dot(qv, av) / np.linalg.norm(qv,2) / np.linalg.norm(av,2)
-        
+        """
+        Compute the cosine similarity score between sparse vectors.
+
+        Args:
+            qv: row-slice of a CRS matrix.  E.g. qv = X[ind,:]
+            av: row-slice of a CRS matrix.
+
+        Returns:
+            score: similarity score
+        """
         qI, qJ, qV = scipy.sparse.find(qv) # these are sorted
         aI, aJ, aV = scipy.sparse.find(av)
 
         dot = 0.0
         nrmq = 0.0
         nrma = 0.0
-
-        #print (len(list(set(qJ) & set(aJ))))
-            
+        
+        # compute norms and dot products of sparse row vectors
         i = 0; j = 0
-        while i < len(qV) or j < len(aV):
-            if i < len(qV) and j < len(aV) and qJ[i] == aJ[j]:
-                dot += qV[i]*aV[j]
+        for i in xrange(len(qJ)):
+            nrmq += qV[i]*qV[i]
 
-            if i < len(qV):
-                nrmq += qV[i]*qV[i] 
-                i += 1
-            if j < len(aV):
+            while j < len(aJ) and aJ[j] <= qJ[i]:
                 nrma += aV[j]*aV[j]
+                
+                if aJ[j] == qJ[i]:
+                    dot += qV[i]*qV[i]
+
                 j += 1
 
         nrmq = math.sqrt(nrmq)
         nrma = math.sqrt(nrma)
-
-        print (dot, nrmq, nrma)
         
-        score = dot / nrmq / nrma
+        if nrmq > 0 and nrma > 0:
+            score = dot / nrmq / nrma
+        else:
+            score = 0.0
+
         return score
 
+    
+    @staticmethod
+    def softcosine(qv, av):
+        raise NotImplementedError()
+        # probably want to use Levenshtein distance for this
+        # http://www.nltk.org/_modules/nltk/metrics/distance.html
+        # this seems like it could be hella expensive
 
