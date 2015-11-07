@@ -5,9 +5,11 @@ import argparse
 import random
 import re
 import string
+import itertools
 
 import cPickle as pickle
 
+# our modules
 import read_csv_data
 import similarity
 import utils
@@ -89,39 +91,32 @@ def answer_xval(args):
         analyzer = similarity.Analyzer()
         feat = similarity.Featurizer(trainx, analyzer, pages_dict)
         
-        print ("Train feature strings:")
-        fs_trainx, fv_trainx = feat.compute_feat_strings(trainx, print_info=True)
-
-        print ("Test feature strings:")
-        fs_testx, fv_testx = feat.compute_feat_strings(testx, print_info=True)
+        print ("Computing feature strings:")
+        fs, fv = feat.compute_feat_strings(trainx + testx, print_info=True)
         
-        pickle.dump((trainx, fs_trainx, fv_trainx, testx, fs_testx, fv_testx, analyzer, feat),
+        pickle.dump((trainx, testx, fs, fv, analyzer, feat),
                 open('../data/xval_feat_strings.pkl', 'wb'), pickle.HIGHEST_PROTOCOL)
 
     elif args.load: # load pre-comuted feature strings
-        print ("Loading precomputed feature strings for train and test:")
-        trainx, fs_trainx, fv_trainx, testx, fs_testx, fv_testx, analyzer, feat = \
+        print ("Loading precomputed feature strings for trainx and testx:")
+        trainx, testx, fs, fv, analyzer, feat = \
                 pickle.load(open('../data/xval_feat_strings.pkl', 'rb'))
     
     ## Here we do some cross-validation
-    X_trainx = feat.compute_feats(fs_trainx)
-    X_trainx = X_trainx.tocsr() # might already be CSR
-    X_trainx.sort_indices() # needed for cosine-type measures
+    X = feat.compute_feats(fs)
+    X = X.tocsr() # might already be CSR
+    X.sort_indices() # needed for cosine-type measures
 
-    X_testx = feat.compute_feats(fs_testx)
-    X_testx = X_testx.tocsr() # might already be CSR
-    X_testx.sort_indices() # needed for cosine-type measures
-    
     print ("Evaluating train data:")
-    acc_trainx = test_xval(trainx, X_trainx, fv_trainx,\
+    acc_trainx = test_xval(trainx, X, fv,\
             scorer=similarity.Scorer.cosine, print_info=True)
     print ("Train accuracy = {}\n".format(acc_trainx))
 
     print ("Evaluating test data:")
-    acc_testx = test_xval(testx, X_testx, fv_testx,\
+    acc_testx = test_xval(testx, X, fv,\
             scorer=similarity.Scorer.cosine, print_info=True)
     print ("Test accuracy = {}\n".format(acc_testx))
-    
+
 
 def answer_questions(args):
     raise NotImplementedError()
