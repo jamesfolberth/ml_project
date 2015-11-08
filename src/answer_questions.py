@@ -6,7 +6,7 @@ import random
 import re
 import string
 import itertools
-
+import csv
 import cPickle as pickle
 
 # our modules
@@ -14,11 +14,9 @@ import read_csv_data
 import similarity
 import utils
 
-def test_xval(questions, X, fv,scorer=similarity.Scorer.cosine, print_info=False):
-    """
-    """
-    num_correct = 0
-    num_total = 0
+
+def make_predictions(questions, X, fv, scorer=similarity.Scorer.cosine, print_info=False):
+    our_answers = [] 
     for ind, q in enumerate(questions):
         if print_info:
             print ("\ranswer {:>06d} of {:>06d}".format(ind+1, len(questions))),
@@ -41,19 +39,32 @@ def test_xval(questions, X, fv,scorer=similarity.Scorer.cosine, print_info=False
         similarity_scores.append(scorer(qv, bv))
         similarity_scores.append(scorer(qv, cv))
         similarity_scores.append(scorer(qv, dv))
-        
-        our_answer = ['A','B','C','D'][similarity_scores.index(max(similarity_scores))]
-        correct_answer = q['correctAnswer']
-         
+
         #print (similarity_scores)
         #print ("our_answer, correct_answer = {}, {}".format(our_answer, correct_answer))
         
-        num_total += 1
-        if our_answer == correct_answer:
-            num_correct += 1
-    
+        our_answer = ['A','B','C','D'][similarity_scores.index(max(similarity_scores))]
+        our_answers.append(our_answer)
+         
     if print_info:
         print("\r")
+    
+    return our_answers
+
+
+def test_xval(questions, X, fv, scorer=similarity.Scorer.cosine, print_info=False):
+    """
+    """
+    our_answers = make_predictions(questions, X, fv, scorer=scorer, print_info=print_info)
+
+    num_correct = 0
+    num_total = 0
+    for q, oa in itertools.izip(questions, our_answers):
+        correct_answer = q['correctAnswer']
+        
+        num_total += 1
+        if oa == correct_answer:
+            num_correct += 1
     
     accuracy = float(num_correct)/float(num_total)
     return accuracy
@@ -89,7 +100,7 @@ def answer_xval(args):
                 .format(len(trainx), len(testx)))
  
         analyzer = similarity.Analyzer()
-        feat = similarity.Featurizer(trainx, analyzer, pages_dict)
+        feat = similarity.Featurizer(analyzer, pages_dict)
         
         print ("Computing feature strings:")
         fs, fv = feat.compute_feat_strings(trainx + testx, print_info=True)
@@ -119,19 +130,74 @@ def answer_xval(args):
 
 
 def answer_questions(args):
-    raise NotImplementedError()
+    """
+    Answer questions on the real-deal dataset by doing the following:
+        1. Extract (or load) feature strings for the training and test set
+        2. Parse the feature strings to compute feature vectors.
+        2. ???
+        3. Profit
+
+    Args:
+        args: ArgumentParser arguments defined in __main__
+
+    Returns:
+        None
+    """
+    pages_dict = pickle.load(open('../data/wiki_pages_dict.pkl', 'rb'))
+    
+    if not args.load:
+        train_reader, test_reader = read_csv_data.read_csv_data()
+        train = list(train_reader); test = list(test_reader)
+        
+        print ("len(train) = {}, len(test) = {}"\
+                .format(len(train), len(test)))
+ 
+        analyzer = similarity.Analyzer()
+        feat = similarity.Featurizer(analyzer, pages_dict)
+        
+        print ("Computing feature strings:")
+        fs, fv = feat.compute_feat_strings(train + test, print_info=True)
+        
+        pickle.dump((train, test, fs, fv, analyzer, feat),
+                open('../data/realdeal_feat_strings.pkl', 'wb'), pickle.HIGHEST_PROTOCOL)
+
+    elif args.load: # load pre-comuted feature strings
+        print ("Loading precomputed feature strings for real-deal train and test:")
+        train, test, fs, fv, analyzer, feat = \
+                pickle.load(open('../data/realdeal_feat_strings.pkl', 'rb'))
+    
+    ## Here we do some cross-validation
+    X = feat.compute_feats(fs)
+    X = X.tocsr() # might already be CSR
+    X.sort_indices() # needed for cosine-type measures
+
+    print ("Evaluating train data (overfitting!):")
+    acc_train = test_xval(train, X, fv,\
+            scorer=similarity.Scorer.cosine, print_info=True)
+    print ("Train accuracy = {}\n".format(acc_train))
+
+    print ("Making predictions for test data:")
+    our_answers = make_predictions(test, X, fv,\
+            scorer=similarity.Scorer.cosine, print_info=True)
+    answer_file = "../data/our_answers.csv"
+    print ("Writing predictions to {}:".format(answer_file))
+    o = csv.DictWriter(open(answer_file, 'w'), ["id", "correctAnswer"])
+    o.writeheader()
+    for q,a in itertools.izip(test, our_answers):
+        d = {"id": q['id'], "correctAnswer": a}
+        o.writerow(d)
 
 
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser()
     argparser.add_argument("--split", help="Percent going to training set for\
-            X-val", type=float, default=85., required=False)
+            X-val", type=float, default=87., required=False)
     argparser.add_argument("--limit", help="Limit training size",
             type=int, default=-1, required=False)
     argparser.add_argument("--load", help="Load precomputed feature strings",
             action="store_true")
     argparser.add_argument("--test", help="Make predictions on the real-deal test set",
-            type=bool, default=False, required=False)
+            action="store_true")
 
     args = argparser.parse_args()
     

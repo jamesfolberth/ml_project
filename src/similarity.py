@@ -51,7 +51,7 @@ class Analyzer:
 
 
 class Featurizer:
-    def __init__(self, train, analyzer, pages_dict):
+    def __init__(self, analyzer, pages_dict):
         
         self.analyzer = analyzer
         self.wiki_pages_dict = pages_dict
@@ -158,7 +158,7 @@ class Featurizer:
             sys.stdout.flush()
             
             if q['id'] not in self.pquestions:
-                self.pquestions[q['id']] = self.process_text(q['question'], pos_tag="bad")
+                self.pquestions[q['id']] = self.process_text(q['question'], pos_tag="good")
 
                 feat_vocab[q['id']] = feat_ind
                 feat_strings.append(self.pquestions[q['id']])
@@ -169,14 +169,14 @@ class Featurizer:
 
             for ans in (q['answerA'], q['answerB'], q['answerC'], q['answerD']):
                 feat_string = ""
-                #if ans not in self.pcontent:
-                #    self.pcontent[ans] = self.process_text(\
-                #            self.wiki_pages_dict[ans]['content'], pos_tag="bad")
-                #    feat_string += self.pcontent[ans] + TOKENSEP
+                if ans not in self.pcontent:
+                    self.pcontent[ans] = self.process_text(\
+                            self.wiki_pages_dict[ans]['content'], pos_tag="bad")
+                    feat_string += self.pcontent[ans] + TOKENSEP
 
                 if ans not in self.psummary:
                     self.psummary[ans] = self.process_text(\
-                            self.wiki_pages_dict[ans]['summary'], pos_tag="bad")
+                            self.wiki_pages_dict[ans]['summary'], pos_tag="good")
                     feat_string += self.psummary[ans] + TOKENSEP
 
                 #if ans not in self.psections: # this is completely untested
