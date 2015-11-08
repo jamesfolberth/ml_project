@@ -6,9 +6,9 @@ Import data: Load wiki pages, correct answers, and unique answers (our data)
     Ex: pages = pickle.load(open('C:/Users/Benjamin/Desktop/Project/wiki_pages.pkl', 'rb'))
     Will need to change directory to your computer preferences
 """
-pages = pickle.load(open('../wiki_pages.pkl', 'rb'))
-correct = pickle.load(open('../correct.pkl', 'rb'))
-ans = pickle.load(open('../UniqAns.pkl', 'rb'))
+pages = pickle.load(open('C:/Users/Benjamin/Desktop/Project/wiki_pages.pkl', 'rb'))
+correct = pickle.load(open('C:/Users/Benjamin/Desktop/Project/correct.pkl', 'rb'))
+ans = pickle.load(open('C:/Users/Benjamin/Desktop/Project/ans.pkl', 'rb'))
 
 # Bad words in categories (too general)
 WORDS = {u'article', u'references', u'sources', u'pages', u'script', u'dmy',
@@ -41,7 +41,7 @@ def get_correct_cat(pages, correct):
     for i in xrange(len(correct)):
         for j in xrange(len(pages)):
             if pages[j]['title'].lower() in str(correct[i]).lower():
-                correct_cat[i] = pages[j]['categories']
+                correct_cat[pages[j]['title']] = pages[j]['categories']
     return correct_cat
 
 """
