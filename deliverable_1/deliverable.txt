@@ -2,6 +2,8 @@ Team: Milksteak
 
 We first implemented code to cache the summary, full text, and categories for all the Wikipedia pages.  We then built a parser that used some NLP tricks to process each question string and the text of the corresponding Wikipedia page.  The parsed/tokenized strings were then used to construct feature vectors.  To produce an answer to a question, we computed the cosine similarity between the question vector and each answer vector (Wikipedia content vector).  Doing just this results in 70% accuracy on our held-out test set (subset of given training set) and also the public test set on Kaggle.
 
+We have also made progress with more of a NLP approach: Because many of the questions have similar structure it is possible to infer from the question wording what subject the correct answer choice belongs to. By looking at which answer is closest to the desired subject we have been able to get good performance on a subset of the data, and hope to include additional heuristics before combining this approach with what we have done so far in order to further boost our performance.
+
 TODO
 Combining our methods should produce a better classifier.  We'll have some hyperparameters to tune via cross validation.
 
