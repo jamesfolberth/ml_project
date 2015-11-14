@@ -4,6 +4,8 @@ We first implemented code to cache the summary, full text, and categories for al
 
 We have also made progress with more of a NLP approach: Because many of the questions have similar structure it is possible to infer from the question wording what subject the correct answer choice belongs to. By looking at which answer is closest to the desired subject we have been able to get good performance on a subset of the data, and hope to include additional heuristics before combining this approach with what we have done so far in order to further boost our performance.
 
+We also have tried logistic regression to get a decent baseline, that returned 63%.  There may be some value in further exploring logistic regression, using wikipedia articles as additional training documents for the answers.
+
 TODO
 Combining our methods should produce a better classifier.  We'll have some hyperparameters to tune via cross validation.
 
