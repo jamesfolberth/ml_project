@@ -8,15 +8,19 @@ import string
 import itertools
 import csv
 import cPickle as pickle
+import lda
 
 # our modules
 import read_csv_data
 import similarity
+import topic_model
 import utils
 
 
-def make_predictions(questions, X, fv, scorer=similarity.Scorer.cosine, print_info=False):
+def make_predictions(questions, X, fv, scorer=similarity.Scorer.cosine,\
+        topics=None, print_info=False):
     our_answers = [] 
+    eps = 1e-10 # to avoid division by zero
     for ind, q in enumerate(questions):
         if print_info:
             print ("\ranswer {:>06d} of {:>06d}".format(ind+1, len(questions))),
@@ -33,17 +37,50 @@ def make_predictions(questions, X, fv, scorer=similarity.Scorer.cosine, print_in
         bv = X[bi,:]
         cv = X[ci,:]
         dv = X[di,:]
-
+    
+        # Similarity measure stuff
         similarity_scores = []
         similarity_scores.append(scorer(qv, av))
         similarity_scores.append(scorer(qv, bv))
         similarity_scores.append(scorer(qv, cv))
         similarity_scores.append(scorer(qv, dv))
 
+        sm = sum(similarity_scores) + 4*eps
+        similarity_scores = map(lambda x: (x+eps) / sm, similarity_scores)
+        
+        if sm == 4*eps:
+            print ("similarity_scores == [0,0,0,0] (so topics definately helps)")
         #print (similarity_scores)
         #print ("our_answer, correct_answer = {}, {}".format(our_answer, correct_answer))
-        
-        our_answer = ['A','B','C','D'][similarity_scores.index(max(similarity_scores))]
+
+        # LDA stuff
+        if topics is not None:
+            qt = topics[qi,:]
+            at = topics[ai,:]
+            bt = topics[bi,:]
+            ct = topics[ci,:]
+            dt = topics[di,:]
+
+            # use the cosine measure to compare topics?
+            topic_scores = []
+            topic_scores.append(np.inner(qt, at) / np.linalg.norm(qt) / np.linalg.norm(at))
+            topic_scores.append(np.inner(qt, bt) / np.linalg.norm(qt) / np.linalg.norm(bt))
+            topic_scores.append(np.inner(qt, ct) / np.linalg.norm(qt) / np.linalg.norm(ct))
+            topic_scores.append(np.inner(qt, dt) / np.linalg.norm(qt) / np.linalg.norm(dt))
+
+            topic_score_index = topic_scores.index(max(topic_scores))
+
+            sm = sum(topic_scores) + 4*eps
+            topic_scores = map(lambda x: (x+eps) / sm, topic_scores)
+ 
+
+        else:
+            topic_scores = [0,0,0,0]
+
+        # use normalized scores to combine with weighted sum
+        scores = map(lambda x: 0.75*x[0] + 0.25*x[1], itertools.izip(similarity_scores, topic_scores))
+
+        our_answer = ['A', 'B', 'C', 'D'][scores.index(max(scores))]
         our_answers.append(our_answer)
          
     if print_info:
@@ -52,10 +89,12 @@ def make_predictions(questions, X, fv, scorer=similarity.Scorer.cosine, print_in
     return our_answers
 
 
-def test_xval(questions, X, fv, scorer=similarity.Scorer.cosine, print_info=False):
+def test_xval(questions, X, fv, scorer=similarity.Scorer.cosine,\
+        topics=None, print_info=False):
     """
     """
-    our_answers = make_predictions(questions, X, fv, scorer=scorer, print_info=print_info)
+    our_answers = make_predictions(questions, X, fv, scorer=scorer,\
+            topics=topics, print_info=print_info)
 
     num_correct = 0
     num_total = 0
@@ -118,14 +157,32 @@ def answer_xval(args):
     X = X.tocsr() # might already be CSR
     X.sort_indices() # needed for cosine-type measures
 
+    #print ("Evaluating train data:")
+    #acc_trainx = test_xval(trainx, X, fv,\
+    #        scorer=similarity.Scorer.cosine, print_info=True)
+    #print ("Train accuracy = {}\n".format(acc_trainx))
+
+    #print ("Evaluating test data:")
+    #acc_testx = test_xval(testx, X, fv,\
+    #        scorer=similarity.Scorer.cosine, print_info=True)
+    #print ("Test accuracy = {}\n".format(acc_testx))
+
+    # try some LDA stuff
+    topic_mod = lda.LDA(n_topics=20, n_iter=150)
+    tm_feat = topic_model.Featurizer(analyzer, pages_dict) # use the same feature strings as similarity
+    topic_X = tm_feat.compute_feats(fs)
+    topics = topic_mod.fit_transform(topic_X) # gives probabilities for each topic
+
     print ("Evaluating train data:")
     acc_trainx = test_xval(trainx, X, fv,\
-            scorer=similarity.Scorer.cosine, print_info=True)
+            #scorer=similarity.Scorer.cosine, print_info=True)
+            scorer=similarity.Scorer.cosine, topics=topics, print_info=True)
     print ("Train accuracy = {}\n".format(acc_trainx))
 
     print ("Evaluating test data:")
     acc_testx = test_xval(testx, X, fv,\
-            scorer=similarity.Scorer.cosine, print_info=True)
+            #scorer=similarity.Scorer.cosine, print_info=True)
+            scorer=similarity.Scorer.cosine, topics=topics, print_info=True)
     print ("Test accuracy = {}\n".format(acc_testx))
 
 
@@ -171,14 +228,26 @@ def answer_questions(args):
     X = X.tocsr() # might already be CSR
     X.sort_indices() # needed for cosine-type measures
 
+    # running into memory issues, so release this guy
+    feat = None
+
+    # try some LDA stuff
+    print ("Training LDA topic model")
+    topic_mod = lda.LDA(n_topics=40, n_iter=500)
+    tm_feat = topic_model.Featurizer(analyzer, pages_dict) # use the same feature strings as similarity
+    topic_X = tm_feat.compute_feats(fs)
+    topics = topic_mod.fit_transform(topic_X) # gives probabilities for each topic
+
     print ("Evaluating train data (overfitting!):")
     acc_train = test_xval(train, X, fv,\
-            scorer=similarity.Scorer.cosine, print_info=True)
+            #scorer=similarity.Scorer.cosine, print_info=True)
+            scorer=similarity.Scorer.cosine, topics=topics, print_info=True)
     print ("Train accuracy = {}\n".format(acc_train))
 
     print ("Making predictions for test data:")
     our_answers = make_predictions(test, X, fv,\
-            scorer=similarity.Scorer.cosine, print_info=True)
+            #scorer=similarity.Scorer.cosine, print_info=True)
+            scorer=similarity.Scorer.cosine, topics=topics, print_info=True)
     answer_file = "../data/our_answers.csv"
     print ("Writing predictions to {}:".format(answer_file))
     o = csv.DictWriter(open(answer_file, 'w'), ["id", "correctAnswer"])
