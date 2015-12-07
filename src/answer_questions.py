@@ -168,9 +168,12 @@ def answer_xval(args):
     #print ("Test accuracy = {}\n".format(acc_testx))
 
     # try some LDA stuff
+    print ("Training LDA topic model")
     topic_mod = lda.LDA(n_topics=20, n_iter=150)
-    tm_feat = topic_model.Featurizer(analyzer, pages_dict) # use the same feature strings as similarity
-    topic_X = tm_feat.compute_feats(fs)
+    tm_analyzer = topic_model.Analyzer()
+    tm_feat = topic_model.Featurizer(tm_analyzer, pages_dict) # use the same feature strings as similarity
+    tm_fs = topic_model.add_wiki_categories(trainx+testx, fs, fv, pages_dict)
+    topic_X = tm_feat.compute_feats(tm_fs)
     topics = topic_mod.fit_transform(topic_X) # gives probabilities for each topic
 
     print ("Evaluating train data:")
@@ -233,9 +236,10 @@ def answer_questions(args):
 
     # try some LDA stuff
     print ("Training LDA topic model")
-    topic_mod = lda.LDA(n_topics=40, n_iter=500)
+    topic_mod = lda.LDA(n_topics=20, n_iter=500)
     tm_feat = topic_model.Featurizer(analyzer, pages_dict) # use the same feature strings as similarity
-    topic_X = tm_feat.compute_feats(fs)
+    tm_fs = topic_model.add_wiki_categories(train+test, fs, fv, pages_dict)
+    topic_X = tm_feat.compute_feats(tm_fs)
     topics = topic_mod.fit_transform(topic_X) # gives probabilities for each topic
 
     print ("Evaluating train data (overfitting!):")

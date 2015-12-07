@@ -27,29 +27,32 @@ class Analyzer:
         base_feats = feat_string.split(TOKENSEP)
         
         # make ngrams from lemmatized words
-        #for n in xrange(self.min_ngram, self.max_ngram+1):
-        #    for ng in nltk.ngrams([bf for bf in base_feats if bf.startswith("LEMM:") and bf[5:].lower() not in self.stop_words], n):
-        #        s = ' '.join(map(lambda s: s.strip("LEMM:"), ng))
-        #        if len(ng) > 1:
-        #            yield s
-        #        else: # only strip stop words for 1-grams
-        #            if s not in self.stop_words:
-        #                yield s
+        for n in xrange(self.min_ngram, self.max_ngram+1):
+            for ng in nltk.ngrams([bf for bf in base_feats if bf.startswith("LEMM:") and bf[5:].lower() not in self.stop_words], n):
+                s = ' '.join(map(lambda s: s.strip("LEMM:"), ng))
+                if len(ng) > 1:
+                    yield s
+                else: # only strip stop words for 1-grams
+                    if s not in self.stop_words:
+                        yield s
         
         # use the original words, but not stop words
-        for bf in [bf for bf in base_feats if bf.startswith("ORIG:") and bf[5:].lower() not in self.stop_words]:
-            yield bf
+        #for bf in [bf for bf in base_feats if bf.startswith("ORIG:") and bf[5:].lower() not in self.stop_words]:
+        #    yield bf
         
         # this will overlap with ORIG:, but if we don't use ORIG, then it'll work
-        #for bf in [bf for bf in base_feats if bf.startswith("NNP:")]:
-        #    yield bf
+        for bf in [bf for bf in base_feats if bf.startswith("NNP:")]:
+            yield bf
 
         #for bf in [bf for bf in base_feats if bf.startswith("TENSE:")]:
         #    yield bf
 
         ##for bf in [bf for bf in base_feats if bf.startswith("SYN:")]:
         ##    yield bf
-
+        
+        # wiki categories
+        for bf in [bf for bf in base_feats if bf.startswith("WIKICAT:")]:
+            yield bf
 
 
 class Featurizer:
@@ -66,7 +69,7 @@ class Featurizer:
         # need true counts for LDA
         self.vectorizer = sklearn.feature_extraction.text.CountVectorizer(\
                 #min_df=0.0, max_df=0.5, max_features=75000, analyzer=self.analyzer) # ran into memory issues
-                min_df=0.0, max_df=0.5, max_features=10000, analyzer=self.analyzer)
+                min_df=0.0, max_df=0.5, max_features=40000, analyzer=self.analyzer)
         #self.vectorizer = sklearn.feature_extraction.text.TfidfVectorizer(\
         #        min_df=0.0, max_df=0.5, max_features=75000, analyzer=self.analyzer)
         
@@ -228,3 +231,22 @@ class Scorer:
     
     #@staticmethod
     #def lskdjflskdjf
+
+
+# add wiki categories to feature string
+def add_wiki_categories(questions, fs, fv, pages_dict):
+    completed_inds = set()
+    for q in questions:
+        for key in ['answerA', 'answerB', 'answerC', 'answerD']:
+            ans = q[key]
+            i = fv[ans]
+            if i not in completed_inds:
+                cats = pages_dict[ans]['categories']
+                if cats:
+                    for cat in cats:
+                        fs[i] += "WIKICAT:" + cat + TOKENSEP
+                completed_inds.add(i)
+
+    return fs
+
+
