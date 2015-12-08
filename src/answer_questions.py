@@ -40,11 +40,11 @@ def make_predictions(questions, X, fv, scorer=similarity.Scorer.cosine,\
     
         # Similarity measure stuff
         similarity_scores = []
-        similarity_scores.append(scorer(qv, av))
-        similarity_scores.append(scorer(qv, bv))
-        similarity_scores.append(scorer(qv, cv))
-        similarity_scores.append(scorer(qv, dv))
-
+        similarity_scores.append(scorer(qv, av) + 1.)
+        similarity_scores.append(scorer(qv, bv) + 1.)
+        similarity_scores.append(scorer(qv, cv) + 1.)
+        similarity_scores.append(scorer(qv, dv) + 1.)
+        
         sm = sum(similarity_scores) + 4*eps
         similarity_scores = map(lambda x: (x+eps) / sm, similarity_scores)
         
@@ -63,10 +63,10 @@ def make_predictions(questions, X, fv, scorer=similarity.Scorer.cosine,\
 
             # use the cosine measure to compare topics?
             topic_scores = []
-            topic_scores.append(np.inner(qt, at) / np.linalg.norm(qt) / np.linalg.norm(at))
-            topic_scores.append(np.inner(qt, bt) / np.linalg.norm(qt) / np.linalg.norm(bt))
-            topic_scores.append(np.inner(qt, ct) / np.linalg.norm(qt) / np.linalg.norm(ct))
-            topic_scores.append(np.inner(qt, dt) / np.linalg.norm(qt) / np.linalg.norm(dt))
+            topic_scores.append(np.inner(qt, at) / np.linalg.norm(qt) / np.linalg.norm(at) + 1.)
+            topic_scores.append(np.inner(qt, bt) / np.linalg.norm(qt) / np.linalg.norm(bt) + 1.)
+            topic_scores.append(np.inner(qt, ct) / np.linalg.norm(qt) / np.linalg.norm(ct) + 1.)
+            topic_scores.append(np.inner(qt, dt) / np.linalg.norm(qt) / np.linalg.norm(dt) + 1.)
 
             topic_score_index = topic_scores.index(max(topic_scores))
 
@@ -238,7 +238,7 @@ def answer_questions(args):
     print ("Training LDA topic model")
     topic_mod = lda.LDA(n_topics=20, n_iter=500)
     tm_feat = topic_model.Featurizer(analyzer, pages_dict) # use the same feature strings as similarity
-    tm_fs = topic_model.add_wiki_categories(train+test, fs, fv, pages_dict)
+    tm_fs = topic_model.add_wiki_categories(train+test, fs, fv, pages_dict) # adding these seems to hurt public test performance.  Does slightly better on Xval
     topic_X = tm_feat.compute_feats(tm_fs)
     topics = topic_mod.fit_transform(topic_X) # gives probabilities for each topic
 

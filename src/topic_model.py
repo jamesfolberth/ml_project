@@ -68,8 +68,8 @@ class Featurizer:
         
         # need true counts for LDA
         self.vectorizer = sklearn.feature_extraction.text.CountVectorizer(\
-                #min_df=0.0, max_df=0.5, max_features=75000, analyzer=self.analyzer) # ran into memory issues
-                min_df=0.0, max_df=0.5, max_features=40000, analyzer=self.analyzer)
+                min_df=0.0, max_df=0.5, max_features=75000, analyzer=self.analyzer)
+        # LDA expects true counts, not a TF-IDF feature
         #self.vectorizer = sklearn.feature_extraction.text.TfidfVectorizer(\
         #        min_df=0.0, max_df=0.5, max_features=75000, analyzer=self.analyzer)
         
