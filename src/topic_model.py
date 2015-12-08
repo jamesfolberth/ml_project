@@ -235,6 +235,12 @@ class Scorer:
 
 # add wiki categories to feature string
 def add_wiki_categories(questions, fs, fv, pages_dict):
+
+    # Bad words in categories (too general)
+    WORDS = set([u'article', u'references', u'sources', u'pages', u'script', u'dmy',
+         u'wikidata', u'maint', u'use', u'links', u'mdy', u'Engvarb', u'cs1',
+         u'wikipedia'])
+
     completed_inds = set()
     for q in questions:
         for key in ['answerA', 'answerB', 'answerC', 'answerD']:
@@ -244,7 +250,8 @@ def add_wiki_categories(questions, fs, fv, pages_dict):
                 cats = pages_dict[ans]['categories']
                 if cats:
                     for cat in cats:
-                        fs[i] += "WIKICAT:" + cat + TOKENSEP
+                        if cat.lower() not in WORDS:
+                            fs[i] += "WIKICAT:" + cat.lower() + TOKENSEP
                 completed_inds.add(i)
 
     return fs
