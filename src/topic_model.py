@@ -250,7 +250,7 @@ def add_wiki_categories(questions, fs, fv, pages_dict):
                 cats = pages_dict[ans]['categories']
                 if cats:
                     for cat in cats:
-                        if cat.lower() not in WORDS:
+                        if all(l not in cat.lower() for l in WORDS):
                             fs[i] += "WIKICAT:" + cat.lower() + TOKENSEP
                 completed_inds.add(i)
 
