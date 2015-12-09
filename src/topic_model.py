@@ -237,7 +237,7 @@ class Scorer:
 def add_wiki_categories(questions, fs, fv, pages_dict):
 
     # Bad words in categories (too general)
-    WORDS = set([u'article', u'references', u'sources', u'pages', u'script', u'dmy',
+    WORDS = frozenset([u'article', u'references', u'sources', u'pages', u'script', u'dmy',
          u'wikidata', u'maint', u'use', u'links', u'mdy', u'Engvarb', u'cs1',
          u'wikipedia'])
 
