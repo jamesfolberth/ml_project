@@ -1,4 +1,3 @@
-
 import sys
 import numpy as np
 import argparse
@@ -114,7 +113,7 @@ def compute_scores(questions, X, fv, scorer=similarity.Scorer.cosine,\
         topics=None, print_info=False, train=False, normalize=True):
     """
     """
-    scores = np.zeros((4*len(questions), 2))
+    scores = np.zeros((4*len(questions), 8))
     if train:
         y = np.zeros((4*len(questions),)) # binary classification
     for ind, q in enumerate(questions):
@@ -163,6 +162,41 @@ def compute_scores(questions, X, fv, scorer=similarity.Scorer.cosine,\
             #if normalize:
             #    sm = sum(scores[4*ind+0:4*ind+3,1])
             #    scores[4*ind+0:4*ind+3,1] /= sm
+
+            # ADDED
+            from lengths import length_gen
+            pages_dict = pickle.load(open('../data/wiki_pages_dict.pkl', 'rb'))
+            l = length_gen(pages_dict)
+            
+            scores[4*ind+0,2] = l[q['answerA']]['links']
+            scores[4*ind+1,2] = l[q['answerB']]['links']
+            scores[4*ind+2,2] = l[q['answerC']]['links']
+            scores[4*ind+3,2] = l[q['answerD']]['links']
+
+            scores[4*ind+0,3] = l[q['answerA']]['title']
+            scores[4*ind+1,3] = l[q['answerB']]['title']
+            scores[4*ind+2,3] = l[q['answerC']]['title']
+            scores[4*ind+3,3] = l[q['answerD']]['title']
+
+            scores[4*ind+0,4] = l[q['answerA']]['summary']
+            scores[4*ind+1,4] = l[q['answerB']]['summary']
+            scores[4*ind+2,4] = l[q['answerC']]['summary']
+            scores[4*ind+3,4] = l[q['answerD']]['summary']
+
+            scores[4*ind+0,5] = l[q['answerA']]['content']
+            scores[4*ind+1,5] = l[q['answerB']]['content']
+            scores[4*ind+2,5] = l[q['answerC']]['content']
+            scores[4*ind+3,5] = l[q['answerD']]['content']
+
+            scores[4*ind+0,6] = l[q['answerA']]['sections']
+            scores[4*ind+1,6] = l[q['answerB']]['sections']
+            scores[4*ind+2,6] = l[q['answerC']]['sections']
+            scores[4*ind+3,6] = l[q['answerD']]['sections']
+
+            scores[4*ind+0,7] = l[q['answerA']]['categories']
+            scores[4*ind+1,7] = l[q['answerB']]['categories']
+            scores[4*ind+2,7] = l[q['answerC']]['categories']
+            scores[4*ind+3,7] = l[q['answerD']]['categories']
  
 
         if train:
@@ -221,10 +255,8 @@ def answer_xval(args):
         2. Parse the feature strings to compute feature vectors.
         2. ???
         3. Profit
-
     Args:
         args: ArgumentParser arguments defined in __main__
-
     Returns:
         None
     """
@@ -291,10 +323,8 @@ def answer_xval_lr(args):
         2. Parse the feature strings to compute feature vectors.
         2. ???
         3. Profit
-
     Args:
         args: ArgumentParser arguments defined in __main__
-
     Returns:
         None
     """
@@ -389,10 +419,8 @@ def answer_questions(args):
         2. Parse the feature strings to compute feature vectors.
         2. ???
         3. Profit
-
     Args:
         args: ArgumentParser arguments defined in __main__
-
     Returns:
         None
     """
@@ -469,9 +497,8 @@ if __name__ == "__main__":
     
     # do the stuff!
     if not args.test:
-        answer_xval(args)
-        #answer_xval_lr(args)
+        #answer_xval(args)
+        answer_xval_lr(args)
 
     else:
         answer_questions(args)
-

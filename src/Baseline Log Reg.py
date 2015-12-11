@@ -70,9 +70,9 @@ def PickBestAnswer(answerlist,percentages,x):
 
 
 
-wikidict=pickle.load( open("wiki_pages_dict.pkl","rb"))
-train = list(DictReader(open("sci_train.csv", 'r')))
-test=   list(DictReader(open("sci_test.csv",'r')))
+wikidict=pickle.load( open("../data/wiki_pages_dict.pkl","rb"))
+train = list(DictReader(open("../data/sci_train.csv", 'r')))
+test=   list(DictReader(open("../data/sci_test.csv",'r')))
 feat = Featurizer()
 x_train= feat.train_feature(list(x["question"] for x in train))
 x_test= feat.test_feature(list(x["question"] for x in test))

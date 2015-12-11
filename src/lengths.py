@@ -6,11 +6,11 @@ pages_dict = pickle.load(open('../data/wiki_pages_dict.pkl', 'rb'))
 Generate lengths categories
     pages_dict: pages with wiki data
     Example -
-        length_dict = lengths(pages_dict)
+        length_dict = length_gen(pages_dict)
         length_dict['Sri Lanka']
         {'links': 1232, 'title': 9, 'summary': 1983, 'content': 70077, 'sections': 0, 'categories': 32}
 """
-def lengths(pages_dict):
+def length_gen(pages_dict):
     length_dict = defaultdict(dict)
     for k, v in pages_dict.iteritems():
         # Combine various lengths into one dict with multiple values

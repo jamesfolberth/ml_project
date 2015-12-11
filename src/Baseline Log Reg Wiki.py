@@ -7,6 +7,10 @@ import numpy as np
 import pickle
 from sklearn import cross_validation
 
+#ADDED
+from lengths import length_gen
+
+
 WORDS = {'article', 'references', 'sources', 'pages', 'script', 'dmy',
          'wikidata', 'maint', 'use', 'links', 'mdy', 'Engvarb', 'cs1'}
 
@@ -82,9 +86,9 @@ def checkGoodString(instring):
 
 
 crossval=1
-wikidict=pickle.load( open("wiki_pages_dict.pkl","rb"))
-train = list(DictReader(open("sci_train.csv", 'r')))
-test=   list(DictReader(open("sci_test.csv",'r')))
+wikidict=pickle.load( open("../data/wiki_pages_dict.pkl","rb"))
+train = list(DictReader(open("../data/sci_train.csv", 'r')))
+test=   list(DictReader(open("../data/sci_test.csv",'r')))
 
 
 mainTrain, testNums, labellist, correct = cross_validation.train_test_split(range(0,len(train)),range(0,len(train)),test_size=.1,random_state=0)
@@ -136,13 +140,17 @@ if crossval==0:
 
     b=2
 
-
+    # ADDED
+    length_pages = length_gen(wikidict)
+    
     feat = Featurizer()
     x_train= feat.train_feature(list(x for x in features))
     x_test= feat.test_feature(list(x["question"] for x in test))
 
     lr = SGDClassifier(loss='log', penalty='l2', shuffle=True)
 
+    print x_train
+    print x_test
 
 
 
@@ -152,7 +160,7 @@ if crossval==0:
     lr.fit(x_train,labels)
     orderedlabels=lr.classes_
     out=lr.predict_proba(x_test)
-    csvobject = DictWriter(open("scipredictions.csv", 'wb'), ["id", "correctAnswer"])
+    csvobject = DictWriter(open("../data/scipredictions.csv", 'wb'), ["id", "correctAnswer"])
     csvobject.writeheader()
     for line, x in zip(out,test):
        answer= PickBestAnswer(orderedlabels,line,x)
@@ -197,7 +205,6 @@ else:
     x_test= feat.test_feature(list(x["question"] for x in test))
 
     lr = SGDClassifier(loss='log', penalty='l2', shuffle=True)
-
 
 
 
