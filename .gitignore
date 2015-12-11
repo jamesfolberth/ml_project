@@ -1,6 +1,5 @@
 *.pyc
 *.pyo
-*.pkl*
 
 proposal/proposal.aux
 proposal/proposal.log
