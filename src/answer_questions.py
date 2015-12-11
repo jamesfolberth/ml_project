@@ -116,6 +116,12 @@ def compute_scores(questions, X, fv, scorer=similarity.Scorer.cosine,\
     scores = np.zeros((4*len(questions), 8))
     if train:
         y = np.zeros((4*len(questions),)) # binary classification
+
+    # ADDED
+    from lengths import length_gen
+    pages_dict = pickle.load(open('../data/wiki_pages_dict.pkl', 'rb'))
+    l = length_gen(pages_dict)
+ 
     for ind, q in enumerate(questions):
         if print_info:
             print ("\ranswer {:>06d} of {:>06d}".format(ind+1, len(questions))),
@@ -163,10 +169,10 @@ def compute_scores(questions, X, fv, scorer=similarity.Scorer.cosine,\
             #    sm = sum(scores[4*ind+0:4*ind+3,1])
             #    scores[4*ind+0:4*ind+3,1] /= sm
 
-            # ADDED
-            from lengths import length_gen
-            pages_dict = pickle.load(open('../data/wiki_pages_dict.pkl', 'rb'))
-            l = length_gen(pages_dict)
+            ## ADDED
+            #from lengths import length_gen
+            #pages_dict = pickle.load(open('../data/wiki_pages_dict.pkl', 'rb'))
+            #l = length_gen(pages_dict)
             
             scores[4*ind+0,2] = l[q['answerA']]['links']
             scores[4*ind+1,2] = l[q['answerB']]['links']
@@ -412,6 +418,133 @@ def answer_xval_lr(args):
     print ("Test accuracy = {}\n".format(acc_testx))
 
 
+def fast_answer_lr(args):
+    """
+    use precomputed similarity and topic scores
+    """
+    pages_dict = pickle.load(open('../data/wiki_pages_dict.pkl', 'rb'))
+    sim_prob_dict = pickle.load(open('../data/sim_prob_dict.pkl', 'rb'))
+    topic_prob_dict = pickle.load(open('../data/topic_prob_dict.pkl', 'rb'))
+    
+    if not args.test:
+        print ("Loading precomputed feature strings for trainx and testx:")
+        train, test, fs, fv, analyzer, feat = \
+                pickle.load(open('../data/xval_feat_strings.pkl', 'rb'))
+    
+    else:
+        print ("Loading precomputed feature strings for real-deal train and test:")
+        train, test, fs, fv, analyzer, feat = \
+                pickle.load(open('../data/realdeal_feat_strings.pkl', 'rb'))
+ 
+
+    from lengths import length_gen
+    l = length_gen(pages_dict)
+    
+    def fast_compute_mat(questions, train=False):
+        mat = np.zeros((4*len(questions), 8))
+
+        if train:
+            y = np.zeros((4*len(questions),)) # binary classification
+ 
+        for ind, q in enumerate(questions):
+            mat[4*ind+0:4*ind+4,0] = sim_prob_dict[q['id']]
+            mat[4*ind+0:4*ind+4,1] = topic_prob_dict[q['id']]
+
+            mat[4*ind+0,2] = l[q['answerA']]['links']
+            mat[4*ind+1,2] = l[q['answerB']]['links']
+            mat[4*ind+2,2] = l[q['answerC']]['links']
+            mat[4*ind+3,2] = l[q['answerD']]['links']
+
+            mat[4*ind+0,3] = l[q['answerA']]['title']
+            mat[4*ind+1,3] = l[q['answerB']]['title']
+            mat[4*ind+2,3] = l[q['answerC']]['title']
+            mat[4*ind+3,3] = l[q['answerD']]['title']
+
+            mat[4*ind+0,4] = l[q['answerA']]['summary']
+            mat[4*ind+1,4] = l[q['answerB']]['summary']
+            mat[4*ind+2,4] = l[q['answerC']]['summary']
+            mat[4*ind+3,4] = l[q['answerD']]['summary']
+
+            mat[4*ind+0,5] = l[q['answerA']]['content']
+            mat[4*ind+1,5] = l[q['answerB']]['content']
+            mat[4*ind+2,5] = l[q['answerC']]['content']
+            mat[4*ind+3,5] = l[q['answerD']]['content']
+
+            mat[4*ind+0,6] = l[q['answerA']]['sections']
+            mat[4*ind+1,6] = l[q['answerB']]['sections']
+            mat[4*ind+2,6] = l[q['answerC']]['sections']
+            mat[4*ind+3,6] = l[q['answerD']]['sections']
+
+            mat[4*ind+0,7] = l[q['answerA']]['categories']
+            mat[4*ind+1,7] = l[q['answerB']]['categories']
+            mat[4*ind+2,7] = l[q['answerC']]['categories']
+            mat[4*ind+3,7] = l[q['answerD']]['categories']
+            
+            if train:
+                if 'correctAnswer' not in q:
+                    raise ValueError("You're not running on the training set.")
+                
+                ca = q['correctAnswer']
+                if ca == 'A':
+                    y[4*ind+0] = 1
+                elif ca == 'B':
+                    y[4*ind+1] = 1
+                elif ca == 'C':
+                    y[4*ind+2] = 1
+                elif ca == 'D':
+                    y[4*ind+3] = 1
+ 
+        if train:
+            return mat, y
+        else:
+            return mat
+
+    #################
+
+    X_lr_train, y_lr_train = fast_compute_mat(train, train=True)
+
+    print ("Training LR")
+    # standardizing
+    lr_scaler = sklearn.preprocessing.StandardScaler(with_mean=True, with_std=True)
+    X_lr_train = lr_scaler.fit_transform(X_lr_train)
+
+    # alpha sets the weight on regularization term
+    lr = sklearn.linear_model.SGDClassifier(loss='log', penalty='l2',\
+            n_iter=100, shuffle=True, fit_intercept=True, class_weight={0:.1, 1:.9})
+    lr.fit(X_lr_train, y_lr_train)
+    #lr.coef_[0,0] = 0.75
+    #lr.coef_[0,1] = 0.25
+    #lr.intercept_[0] = 0.0
+    print (lr.coef_)
+    print (lr.intercept_)
+    our_answers = lr_make_predictions(X_lr_train, lr)
+    acc_train = compute_accuracy(train, our_answers)
+    print ("Train accuracy = {}\n".format(acc_train))
+    
+    if not args.test:
+        print ("Evaluating (Xval) test data:")
+        X_lr_test = fast_compute_mat(test)
+        X_lr_test = lr_scaler.transform(X_lr_test)
+        our_answers = lr_make_predictions(X_lr_test, lr)
+        acc_test = compute_accuracy(test, our_answers)
+        print ("Test accuracy = {}\n".format(acc_test))
+
+    else:
+        print ("Making predictions for test data:")
+        X_lr_test = fast_compute_mat(test)
+        X_lr_test = lr_scaler.transform(X_lr_test)
+        our_answers = lr_make_predictions(X_lr_test, lr)
+ 
+        answer_file = "../data/our_answers.csv"
+        print ("Writing predictions to {}:".format(answer_file))
+        o = csv.DictWriter(open(answer_file, 'w'), ["id", "correctAnswer"])
+        o.writeheader()
+        for q,a in itertools.izip(test, our_answers):
+            d = {"id": q['id'], "correctAnswer": a}
+            o.writerow(d)
+
+
+
 def answer_questions(args):
     """
     Answer questions on the real-deal dataset by doing the following:
@@ -457,7 +590,7 @@ def answer_questions(args):
 
     # try some LDA stuff
     print ("Training LDA topic model")
-    topic_mod = lda.LDA(n_topics=20, n_iter=500)
+    topic_mod = lda.LDA(n_topics=20, n_iter=250)
     tm_feat = topic_model.Featurizer(analyzer, pages_dict) # use the same feature strings as similarity
     tm_fs = topic_model.add_wiki_categories(train+test, fs, fv, pages_dict) # adding these seems to hurt public test performance.  Does slightly better on Xval
     topic_X = tm_feat.compute_feats(tm_fs)
@@ -492,13 +625,18 @@ if __name__ == "__main__":
             action="store_true")
     argparser.add_argument("--test", help="Make predictions on the real-deal test set",
             action="store_true")
+    argparser.add_argument("--fast", help="Do the things with the stuff",
+            action="store_true")
 
     args = argparser.parse_args()
     
-    # do the stuff!
-    if not args.test:
-        #answer_xval(args)
-        answer_xval_lr(args)
+    if args.fast:
+        fast_answer_lr(args)
 
-    else:
-        answer_questions(args)
+    else:# do the stuff!
+        if not args.test:
+            #answer_xval(args)
+            answer_xval_lr(args)
+
+        else:
+            answer_questions(args)
