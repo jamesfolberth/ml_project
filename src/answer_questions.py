@@ -469,8 +469,8 @@ if __name__ == "__main__":
     
     # do the stuff!
     if not args.test:
-        #answer_xval(args)
-        answer_xval_lr(args)
+        answer_xval(args)
+        #answer_xval_lr(args)
 
     else:
         answer_questions(args)
