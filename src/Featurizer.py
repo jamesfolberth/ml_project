@@ -5,7 +5,7 @@ import numpy as np
 
 class Featurizer:
     def __init__(self):
-        self.vectorizer = CountVectorizer(stop_words="english")
+        self.vectorizer = CountVectorizer(stop_words="english",ngram_range=(1,1),strip_accents='ascii')
 
     def train_feature(self, examples):
         return self.vectorizer.fit_transform(examples)

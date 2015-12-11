@@ -17,7 +17,7 @@ import similarity
 import topic_model
 import utils
 
-def compute_scores(questions, X, fv, scorer=similarity.Scorer.cosine,\
+def compute_scores(sim_dict,top_dict,questions, X, fv, scorer=similarity.Scorer.cosine,\
         topics=None, print_info=False, train=False, normalize=True):
     """
     """
@@ -42,11 +42,11 @@ def compute_scores(questions, X, fv, scorer=similarity.Scorer.cosine,\
         dv = X[di,:]
     
         # Similarity measure stuff
-        scores[4*ind+0,0] = scorer(qv, av)
-        scores[4*ind+1,0] = scorer(qv, bv)
-        scores[4*ind+2,0] = scorer(qv, cv)
-        scores[4*ind+3,0] = scorer(qv, dv)
-        
+        aa = scorer(qv, av)
+        bb = scorer(qv, bv)
+        cc = scorer(qv, cv)
+        dd = scorer(qv, dv)
+        sim_dict[q['id']]=[aa,bb,cc,dd]
         # Just use sklearn's standard scaler
         #if normalize:
         #    sm = sum(scores[4*ind+0:4*ind+3,0])
@@ -62,11 +62,11 @@ def compute_scores(questions, X, fv, scorer=similarity.Scorer.cosine,\
 
             # use the cosine measure to compare topics?
             
-            scores[4*ind+0,1] = np.inner(qt, at) / np.linalg.norm(qt) / np.linalg.norm(at)
-            scores[4*ind+1,1] = np.inner(qt, bt) / np.linalg.norm(qt) / np.linalg.norm(bt)
-            scores[4*ind+2,1] = np.inner(qt, ct) / np.linalg.norm(qt) / np.linalg.norm(ct)
-            scores[4*ind+3,1] = np.inner(qt, dt) / np.linalg.norm(qt) / np.linalg.norm(dt)
-
+            aa = np.inner(qt, at) / np.linalg.norm(qt) / np.linalg.norm(at)
+            bb = np.inner(qt, bt) / np.linalg.norm(qt) / np.linalg.norm(bt)
+            cc = np.inner(qt, ct) / np.linalg.norm(qt) / np.linalg.norm(ct)
+            dd = np.inner(qt, dt) / np.linalg.norm(qt) / np.linalg.norm(dt)
+            top_dict[q['id']]=[aa,bb,cc,dd]
             #if normalize:
             #    sm = sum(scores[4*ind+0:4*ind+3,1])
             #    scores[4*ind+0:4*ind+3,1] /= sm
@@ -127,38 +127,38 @@ def make_sim_and_topic_dicts():
     # compute similarity for each question and each answer (of 4)
     # use this as X (e.g. NLP similarity, LDA similarity)
     # binary classification with LR (i.e. is the answer right or not)
-    
+    sim_prob_dict = dict()
+    topic_prob_dict = dict()
     print ("Evaluating train data:")
-    X_lr_train = compute_scores(train, X, fv,\
+    X_lr_train = compute_scores(sim_prob_dict,topic_prob_dict,train, X, fv,\
             scorer=similarity.Scorer.cosine, topics=topics, train=False,\
             #scorer=similarity.Scorer.cosine, topics=None, train=False,\
             print_info=True)
     
-    sim_prob_dict = dict()
-    topic_prob_dict = dict()
-    for ind, q in enumerate(train):
-        arr = np.exp(X_lr_train[4*ind:4*ind+4,0]) # soft-max
-        sim_prob_dict[q['id']] = arr / sum(arr)
 
-        arr = np.exp(X_lr_train[4*ind:4*ind+4,1])
-        topic_prob_dict[q['id']] = arr / sum(arr)
-        #print (q['id'], sim_prob_dict[q['id']], topic_prob_dict[q['id']])
-
-    print ("Evaluating test data:")
-    X_lr_test = compute_scores(test, X, fv,\
+    # for ind, q in enumerate(train):
+    #     arr = np.exp(X_lr_train[4*ind:4*ind+4,0]) # soft-max
+    #     sim_prob_dict[q['id']] = arr / sum(arr)
+    #
+    #     arr = np.exp(X_lr_train[4*ind:4*ind+4,1])
+    #     topic_prob_dict[q['id']] = arr / sum(arr)
+    #     #print (q['id'], sim_prob_dict[q['id']], topic_prob_dict[q['id']])
+    #
+    # print ("Evaluating test data:")
+    X_lr_test = compute_scores(sim_prob_dict,topic_prob_dict,test, X, fv,\
             scorer=similarity.Scorer.cosine, topics=topics, train=False,\
             print_info=True)
-    
-    for ind, q in enumerate(test):
-        arr = np.exp(X_lr_test[4*ind:4*ind+4,0]) # soft-max
-        sim_prob_dict[q['id']] = arr / sum(arr)
 
-        arr = np.exp(X_lr_test[4*ind:4*ind+4,1])
-        topic_prob_dict[q['id']] = arr / sum(arr)
-        #print (q['id'], sim_prob_dict[q['id']], topic_prob_dict[q['id']])
+    # for ind, q in enumerate(test):
+    #     arr = np.exp(X_lr_test[4*ind:4*ind+4,0]) # soft-max
+    #     sim_prob_dict[q['id']] = arr / sum(arr)
+    #
+    #     arr = np.exp(X_lr_test[4*ind:4*ind+4,1])
+    #     topic_prob_dict[q['id']] = arr / sum(arr)
+    #     #print (q['id'], sim_prob_dict[q['id']], topic_prob_dict[q['id']])
  
-    pickle.dump(sim_prob_dict, open('../data/sim_prob_dict.pkl', 'wb'), pickle.HIGHEST_PROTOCOL)
-    pickle.dump(topic_prob_dict, open('../data/topic_prob_dict.pkl', 'wb'), pickle.HIGHEST_PROTOCOL)
+    pickle.dump(sim_prob_dict, open('../data/derek_sim_prob_dict.pkl', 'wb'))
+    pickle.dump(topic_prob_dict, open('../data/derek_topic_prob_dict.pkl', 'wb'))
 
 
 if __name__ == "__main__":

@@ -463,7 +463,7 @@ if __name__ == "__main__":
     argparser.add_argument("--load", help="Load precomputed feature strings",
             action="store_true")
     argparser.add_argument("--test", help="Make predictions on the real-deal test set",
-            action="store_true")
+            action="store_true",default=True)
 
     args = argparser.parse_args()
     
