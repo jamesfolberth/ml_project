@@ -98,10 +98,11 @@ def compute_scores(questions, X, fv, scorer=similarity.Scorer.cosine,\
 def make_sim_and_topic_dicts():
     pages_dict = pickle.load(open('../data/wiki_pages_dict.pkl', 'rb'))
 
-    print ("Loading precomputed feature strings for trainx and testx:")
+    #print ("Loading precomputed feature strings for trainx and testx:")
     #train, test, fs, fv, analyzer, feat = \
     #        pickle.load(open('../data/xval_feat_strings.pkl', 'rb'))
-    #print ("Loading precomputed feature strings for real-deal train and test:")
+    
+    print ("Loading precomputed feature strings for real-deal train and test:")
     train, test, fs, fv, analyzer, feat = \
             pickle.load(open('../data/realdeal_feat_strings.pkl', 'rb'))
 
@@ -115,8 +116,8 @@ def make_sim_and_topic_dicts():
 
     # try some LDA stuff
     print ("Training LDA topic model")
-    topic_mod = lda.LDA(n_topics=20, n_iter=150)
-    #topic_mod = lda.LDA(n_topics=20, n_iter=500)
+    #topic_mod = lda.LDA(n_topics=20, n_iter=150)
+    topic_mod = lda.LDA(n_topics=20, n_iter=500)
     tm_analyzer = topic_model.Analyzer()
     tm_feat = topic_model.Featurizer(tm_analyzer, pages_dict) # use the same feature strings as similarity
     tm_fs = topic_model.add_wiki_categories(train+test, fs, fv, pages_dict)
@@ -130,15 +131,16 @@ def make_sim_and_topic_dicts():
     print ("Evaluating train data:")
     X_lr_train = compute_scores(train, X, fv,\
             scorer=similarity.Scorer.cosine, topics=topics, train=False,\
+            #scorer=similarity.Scorer.cosine, topics=None, train=False,\
             print_info=True)
     
     sim_prob_dict = dict()
     topic_prob_dict = dict()
     for ind, q in enumerate(train):
-        arr = np.exp(X_lr_train[ind:ind+4,0]) # soft-max
+        arr = np.exp(X_lr_train[4*ind:4*ind+4,0]) # soft-max
         sim_prob_dict[q['id']] = arr / sum(arr)
 
-        arr = np.exp(X_lr_train[ind:ind+4,1])
+        arr = np.exp(X_lr_train[4*ind:4*ind+4,1])
         topic_prob_dict[q['id']] = arr / sum(arr)
         #print (q['id'], sim_prob_dict[q['id']], topic_prob_dict[q['id']])
 
@@ -148,10 +150,10 @@ def make_sim_and_topic_dicts():
             print_info=True)
     
     for ind, q in enumerate(test):
-        arr = np.exp(X_lr_test[ind:ind+4,0]) # soft-max
+        arr = np.exp(X_lr_test[4*ind:4*ind+4,0]) # soft-max
         sim_prob_dict[q['id']] = arr / sum(arr)
 
-        arr = np.exp(X_lr_test[ind:ind+4,1])
+        arr = np.exp(X_lr_test[4*ind:4*ind+4,1])
         topic_prob_dict[q['id']] = arr / sum(arr)
         #print (q['id'], sim_prob_dict[q['id']], topic_prob_dict[q['id']])
  
