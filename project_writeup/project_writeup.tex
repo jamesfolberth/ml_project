@@ -143,6 +143,29 @@ One of our first ideas is to lemmatize, and make $n$-grams out of, the text in t
 \label{ssec:topic_model}
 It is also natural to attempt to categorize each question and answer as physics, chemistry, math, etc..  We elected to use LDA to sort this out.  After training the topic model on the feature vectors from section \ref{ssec:nlp}, we compute the topic probabilities for each question and answer.  We compare these probability vectors using the cosine similarity measure.  James and Ben took the lead on this.\\
 
+In selecting the topics to construct the term-document matrix, we chose to utilize the \texttt{Categories} section from the Wikipedia pages; that is, for each answer choice $A$ through $D$, each category to the corresponding Wikipedia page is used as a topic. For example, the answer \texttt{Duino Elegies} includes the following categories, 
+
+\[\begin{array}{lll}
+\text{Topic} & & \text{Documents} \\ \hline
+\texttt{Duino Elegies} & & \text{1912 poems}, \, \text{1922 poems}, \text{1923 books}, \\
+& & \text{Articles containing German-language text}, \\
+& &  \text{Articles containing non-English-language text}, \\
+& &  \text{Articles that link to foreign-language Wikisources}, \, \ldots
+\end{array}
+\]
+
+This process initially included many categories that were too vague or general for our term-document matrix. Considering the table above, the document ``Articles that link to foreign-language Wikisources'' is not specific enough to its corresponding topic, \texttt{Duino Elegies}. Accordingly, words corresponding to weak documents were identified, and sentences containing these words were subsequently removed from the categories. For \texttt{Duino Elegies}, this resulted more concise documents,
+
+\[\begin{array}{lll}
+\text{Topic} & & \text{Documents} \\ \hline
+\texttt{Duino Elegies} & & \text{Austrian books}, \, \text{1912 poems}, \, \text{1922 poems}, \\
+& & \text{1923 books}, \, \text{Poetry collections}, \\
+& & \text{Poetry by Rainer Maria Rilke}
+\end{array}
+\]
+
+\noindent Streamlining this process in Python reduced excess noise associated with our LDA implementation.
+
 
 \subsection{Logistic Regression}
 Logistic regression was used to attempt to answer the science questions.  L2 Regularization was used.  Many different feature sets where used to train the lr model.  The following subsections will go into detail each feature set used, and the results from said featureset
