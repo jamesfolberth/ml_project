@@ -208,9 +208,13 @@ There was a slight problem, the testing set had questions that were not covered 
 This method scored surprisingly well, scoring a 63 percent on kaggle.  This came as a shock, because the training data is not complete for the testing data.  Cross validation was not performed with this method( but was performed for all of the remaining logistic regression attempts) because there was simply not enough information in the training set, cross validation could remove more valid answers from all of the labels.  The success of this method showed that there is promise in cross-validation, and that better percentages by adding further features could possibly be obtained.
 
 \subsubsection{Wikipedia summary sentences}
-Since the previous logistic regression with limited data gave good results, we tried to expand on it using wikipedia data.  The wikipedia data we extracted for each question has a summary section, which contains a small amount of sentences that give a good summary on each answer.
+Since the previous logistic regression with limited data gave good results, we tried to expand on it using Wikipedia data.  The Wikipedia data we extracted for each question has a summary section, which contains a small amount of sentences that give a good summary on each answer.
 
-Using the whole summary did not work very well.  However, looking at the structure of the testing data, each test question is approximatly one sentence, while each training example is also approximatly one sentence.  To emulate this, each wikipedia summary was seperated by periods.  This gave multiple strings that most likely were a single sentence.  This was then added to the logistic regression model, as training data.
+Using the whole summary did not work very well.  However, looking at the structure of the testing data, each test question is approximately one sentence, while each training example is also approximately one sentence.  To emulate this, each Wikipedia summary was separated by periods.  This gave multiple strings that most likely were a single sentence.  This was then added to the logistic regression model, as training data.
+
+In this case, there was enough data to use cross validation.  We used 10 percent of the training set as the testing set.  After seperating the training into two sets of training and test data, the cross-validation achieved a 72 percent accuracy.  When submitted to kaggle, it scored a 65 percent accuracy.
+
+Other wikipedia features were tried, such as using the categories, but no noticable increase in accuracy was found.
 \label{ssec:log_reg}
 
 
