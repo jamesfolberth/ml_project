@@ -147,6 +147,15 @@ It is also natural to attempt to categorize each question and answer as physics,
 \subsection{Logistic Regression}
 Logistic regression was used to attempt to answer the science questions.  L2 Regularization was used.  Many different feature sets where used to train the lr model.  The following subsections will go into detail each feature set used, and the results from said featureset
 \subsubsection{Baseline: Sample Questions Only}
+This was the first featureset we used, and was used as our baseline percentage.  The training data consisted of 5441 questions.  Each question was a sentence, that had four possible answers.  The label assigned to each question was the correct answer, which is given in the training data set.  The sentences were put through a count vectorizer, using a list of common english stop words and removing the accents from each letter.  The testing set follows the same format, with 785 test questions.  The difference is that the test questions do not have a known correct answer, but four possible answers.
+
+There was a slight problem, the testing set had questions that were not covered by correct answers in the training sets.  While additional features could be added to cover these missing labels, a workaround was used for the baseline.  Once the LR was trained, the probabilities for each possible question was generated.  Then, the probabilities from logistic regression for the four possible answers were calculated.  If all answers were assigned a probability, meaning they were in the training set, the answer with the highest probability was chosen.  If not, and there is a answer with a zero probability, the difference between the first best and second best answer was examined.  If the difference between their probabilities was small, then the unknown question was chosen, because the classifier cannot decide between two of the known options.
+
+This method scored surprisingly well, scoring a 63 percent on kaggle.  This came as a shock, because the training data is not complete for the testing data.  Cross validation was not performed with this method( but was performed for all of the remaining logistic regression attempts) because there was simply not enough information in the training set, cross validation could remove more valid answers from all of the labels.  The success of this method showed that there is promise in cross-validation, and that better percentages by adding further features could possibly be obtained.
+
+\subsubsection{Wikipedia summary sentences}
+
+
 
 
 \label{ssec:log_reg}
