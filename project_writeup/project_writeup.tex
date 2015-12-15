@@ -266,6 +266,8 @@ Other Wikipedia features were also incorporated, such as using their categories,
 \label{ssec:log_reg}
 
 \subsection{Final ensemble learner}
+Derek took the lead on assembling the ensemble
+
 Because the logistic regression, topic models, and cosine similarity methods all provided good results, we combined their algorithms into one ensemble learner.  To accomplish this, the logistic regression with Wikipedia summaries found the corresponding probabilities of the four possible answers, while the topic model and cosine similarity gave similar measurements for each answer. \\
 
 The scores were all normalized, and a scaling factor was given to each of these resulting vectors before they were summed together. More specifically, the cosine similarity was assigned a scaling factor of 1.5, the topic model a scaling factor of .75, and the logistic regression learner a scaling factor of one.  The answer with the highest sum was chosen from the four possibilities. \\
