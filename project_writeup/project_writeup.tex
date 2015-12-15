@@ -218,7 +218,9 @@ Other wikipedia features were tried, such as using the categories, but no notica
 \label{ssec:log_reg}
 
 \subsection{Final ensemble learner}
-Because both logistic regression, topic models, and cosine similarity gave good results, we attempted to combine the results into an ensemble learner.
+Because both logistic regression, topic models, and cosine similarity gave good results, we attempted to combine the results into an ensemble learner.  To accomplish this, the logistic regresion model with wikipedia summaries found the probability of the four possible answers, and normalized them so they would add up to 100 percent.  The topic model and cosine similarity gave similar measurements, and were normalized too add up to one as well, for the four possible answers.  A scaling factor was given to each of these vectors, and they were summed.  The answer with the highest sum was chosen.  The cosine similarity was given a scaling factor of 1.5, the topic model a scaling factor of .75, and the logistic regression learner a scaling factor of one.
+
+This achieved an average of 82.5 percent in cross validation.  In addition to this, the final hidden testing set got a 79 percent accuracy on kaggle.  This was the highest percentage we achieved. 
 
 
 
