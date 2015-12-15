@@ -130,7 +130,7 @@ University of Colorado at Boulder
 \begin{frame}{NLP to Eliminate Answers}
    \begin{itemize}
       \item NLTK part-of-speech tagger to determine answer category
-      \item Use Wikipedia data along with the PyGoogle module to gain insight answer-category relationship
+      \item Use Wikipedia data along with the PyGoogle module to gain insight into the answer-category relationship
       \item Eliminate options with a very low false positive rate
    \end{itemize}
 \end{frame}
@@ -218,6 +218,7 @@ Logistic Regression Baseline: {\color{red}$62\%$}
     \begin{itemize}
         \item Additional Training Data: {\color{blue}$72\%$} cross-val, {\color{blue}$65\%$} on Kaggle
         \item Cosine Similarity: {\color{blue}$\sim 70\%$}
+	\item NLP Answer Rejection using Wiki data only  {\color{blue}$\sim 40\%$} (Not included in strong ensemble boosting)
         \item Topic Model: {\color{blue}$\sim 55\%$}
         \item Logistic Regression using Similarity, Topic Model, and Length Features: {\color{blue}$78.6\%$}
     \end{itemize}
