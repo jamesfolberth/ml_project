@@ -143,7 +143,24 @@ University of Colorado at Boulder
 
 %\subsection{Logistic Regression}
 \begin{frame}{Logistic Regression}
-
+    \begin{itemize}
+        \item Optimized combination of methods via Logistic Regression.
+            \begin{itemize}
+                \item Main regression parameters (largest):
+		\begin{itemize}
+		    \item Cosine Similarity ({\color{green}$+$})
+		    \item Length of Answer Choice ({\color{red}$-$})
+		    \item Topic Model ({\color{green}$+$})
+		\end{itemize}
+	    \item Other regression parameters (less significant):
+		\begin{itemize}
+		    \item Lengths of Wiki Links ({\color{red}$-$})
+		    \item Lengths of Wiki Summary ({\color{green}$+$})
+		    \item Lengths of Wiki Content ({\color{red}$-$})
+		    \item Lengths of Wiki Categories ({\color{green}$+$})
+		\end{itemize}
+            \end{itemize}
+    \end{itemize}
 \end{frame}
 
 %----------------------------------------------------------------------------------------------------------------------------------
