@@ -16,6 +16,7 @@
 \pagenumbering{arabic}
 \usepackage{hyperref}
 \usepackage{enumerate}
+\usepackage{color}
 %\numberwithin{equation}{section}
 %\usepackage{soul} % for \ul - a ``better'' underlining command
 
@@ -138,6 +139,20 @@ One of our first ideas is to lemmatize, and make $n$-grams out of, the text in t
 
 \noindent The higher the inner product between two feature vectors $v_i$ and $v_j$, the more similar the two documents should be.  We ended up computing the similarity of the question and each of the four corresponding questions.  The answer with the highest similarity will hopefully be the right answer.  Using this method only, we scored $70\%$ in our ``cross-validation'' and also on Kaggle.  James took the lead on this.\\
 
+\subsection{Using NLP to Eliminate Answers}
+We began this project by inspecting a sample of questions and answers to try to identify a structure that we exploit in order to determine correct answers. When we observed that a majority of the questions were phrased in a similar manner to the examples shown below, we decided that an NLP approach to eliminate answers could be effective:
+
+\begin{enumerate}
+      \item Antibodies that localize to {\color{red}this} {\color{green}organelle} are associated with Sjogren\'s ("SHOW-grenz") syndrome, and a deficiency of a phosphatase localized to it causes Lowe\'s syndrome.
+
+	(a) {\color{green}Golgi Apparatus} (b) Apoptosis (c) {\color{green}Peroxisome} (d) Collagen
+
+      \item {\color{red}This} {\color{green}phylum's} members have a pair of pouches that split from the archenteron, with each pouch constricting into three portions. 
+
+	(a) Xylem (b) {\color{green}Echinoderm} (c) Sponge (d) Mitochondrian
+\end{enumerate} 
+
+These questions, which make up roughly 2/3 of the dataset, use the keywords "this" and "these" to indicate a general category that an answer must fit. For example 1 above the correct answer must be an organelle which immediately eliminates answers (b) and (d), while in example 2 only answer (b) fits the category of phylum and must therefor be the correct answer. In this manner we hoped to develope a system that would eliminate incorrect answers with a very low false-positive rate so that the other classifiers we implemented could achive better performance. The first step in this process involved utilizing the NLTK to  perform part-of-speech tagging on all of the questions in the dataset. These POS tags can then be used to find the noun that most immediately follows the keywords, in questions where the keywords are present, and in doing so obtain the answer category. For each question, we hoped that we would be able to utilize the PyGoogle module to make queries to Google to help determine whether an answer was a member of the necesary category for each question. The PyGoogle module has a method that returns the number of web pages found for a given query, and seemed like a good way to quantify how related an answer and category are. After fruitlessly fighting with the PyGoogle API to perform the large number of queries necessary for this method to be successful, we eventually decided to use only the Wikipedia data to eliminate answers. Through cross-validation we discovered that this did not lead to any imporved performance when used in conjunction with the other algorithms, and was not implemented for the final classification.
 
 \subsection{Topic Model}
 \label{ssec:topic_model}
