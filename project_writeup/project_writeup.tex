@@ -131,9 +131,9 @@ We competed in the science question answering project.  Our team name is Milkste
         \textit{We are given a training and testing set of questions and answers, and each question has four possible answers, only one of which is correct.}
     \end{center}
 
-Questions generally include a few proper nouns, and each answer corresponds, almost directly, to a Wikipedia page title.  Our code should attempt to answer the questions correctly. \\
+Questions generally include a few proper nouns, and each answer corresponds, almost directly, to a Wikipedia page title.  Our code attempts to answer the questions correctly. \\
 
-We used the Python \texttt{wikipedia} module to download text data from Wikipedia pages.  Our code is available on James' \href{https://github.com/jamesfolberth/ml_project}{Github page}.\\
+In addition, we used the Python \texttt{wikipedia} module to download text data from Wikipedia pages.  Our code is available on James' \href{https://github.com/jamesfolberth/ml_project}{Github page}.\\
 
 \subsection{NLP and Feature Vectors}
 \label{ssec:nlp}
@@ -146,7 +146,7 @@ One of our first ideas is to lemmatize, and make $n$-grams out of, the text in t
 %-----------------------------------------------------------------------
 
 \subsection{Using NLP to Eliminate Answers}
-We began this project by inspecting a sample of questions and answers to try to identify a structure that we exploit in order to determine correct answers. When we observed that a majority of the questions were phrased in a similar manner to the examples shown below, we decided that an NLP approach to eliminate answers could be effective:
+We began this project by inspecting a sample of questions and answers to try identifying a structure that we could exploit in order to determine correct answers. When we observed that a majority of the questions were phrased in a similar manner to the examples shown below, we decided that an NLP approach to eliminate answers could be effective:
 
 \begin{enumerate}
       \item Antibodies that localize to {\color{red}this} {\color{green}organelle} are associated with Sjogren\'s ("SHOW-grenz") syndrome, and a deficiency of a phosphatase localized to it causes Lowe\'s syndrome.
@@ -158,7 +158,11 @@ We began this project by inspecting a sample of questions and answers to try to 
 	(a) Xylem (b) {\color{green}Echinoderm} (c) Sponge (d) Mitochondrian
 \end{enumerate} 
 
-These questions, which make up roughly 63$\%$ of the dataset, use the keywords "this" and "these" to indicate a general category that an answer must fit. For example 1 above the correct answer must be an organelle which immediately eliminates answers (b) and (d), while in example 2 only answer (b) fits the category of phylum and must therefor be the correct answer. To analyze these questions we first utilized the NLTK to  perform part-of-speech tagging on all of the questions in the dataset. These POS tags were used to find the noun that most immediately follows the keywords, which became the answer category. We then attempted to utilize the PyGoogle module to make queries to Google to help determine whether an answer was a member of the necessary category for each question. The Google queries continually threw exceptions and we eventually decided to use only the Wikipedia data to eliminate answers. To do this we counted the number of occurrences of the category word in each answer's Wiki page. To reduce the false positive rate we only answered questions where the category appeared in a single answer's Wiki at least "max num" times and appeared in every other answers' Wiki less than "min num" times. The performance for different combinations  of these parameters are summarized in the table below:\\
+These questions, which make up roughly 63$\%$ of the dataset, use the keywords "this" and "these" to indicate a general category that an answer must fit. For example (1.) above, the correct answer must be an organelle which immediately eliminates answers (b) and (d), while in example 2 only answer (b) fits the category of phylum and must therefore be the correct answer. \\
+
+To analyze these questions we first utilized the NLTK to  perform part-of-speech tagging on all of the questions in the dataset. These POS tags were used to find the noun that most immediately follows the keywords, which became the answer category. We then attempted to utilize the PyGoogle module to make queries to Google to help determine whether an answer was a member of the necessary category for each question. \\
+
+However, the Google queries continually threw exceptions and we eventually decided to use only the Wikipedia data to eliminate answers by counting the number of occurrences of the category word in each answer's Wiki page. To reduce the false positive rate we only answered questions where the category appeared in a single answer's Wiki at least "max num" times and appeared in every other answers' Wiki less than "min num" times. The performance for different combinations  of these parameters are summarized in the table below:\\
 
 \begin{center}
 \begin{tabular}{l*{6}{c}r}
@@ -176,7 +180,7 @@ We tried integrating some of these answers with the ensemble learner, but were u
 
 \subsection{Topic Model}
 \label{ssec:topic_model}
-It is also natural to attempt to categorize each question and answer as physics, chemistry, math, etc..  We elected to use LDA to sort this out.  After training the topic model on the feature vectors from section \ref{ssec:nlp}, we compute the topic probabilities for each question and answer.  We compare these probability vectors using the cosine similarity measure.  James and Ben took the lead on this.\\
+It is also natural to attempt to categorize each question and answer by its class; that is, whether either falls under the broader category of physics, chemistry, math, and so forth.  We elected to use LDA to accomplish this task.  After training the topic model on the feature vectors from section \ref{ssec:nlp}, we computed the topic probabilities for each question and answer.  We then compared these probability vectors using the cosine similarity measure.  James and Ben took the lead on this.\\
 
 In selecting the topics to construct the term-document matrix, we chose to utilize the \texttt{Categories} section from the Wikipedia pages; that is, for each answer choice $A$ through $D$, each category to the corresponding Wikipedia page is used as a topic. For example, the answer \texttt{Duino Elegies} includes the following categories, 
 
@@ -190,7 +194,7 @@ In selecting the topics to construct the term-document matrix, we chose to utili
 	\end{array}
 \]
 
-This process initially included many categories that were too vague or general for our term-document matrix. Considering the table above, the document ``Articles that link to foreign-language Wikisources'' is not specific enough to its corresponding topic, \texttt{Duino Elegies}. Accordingly, words corresponding to weak documents were identified, and sentences containing these words were subsequently removed from the categories. For \texttt{Duino Elegies}, this resulted more concise documents,
+This process initially included many categories that were too vague or general for our term-document matrix. Considering the table above, the document ``Articles that link to foreign-language Wikisources'' is not specific enough to its corresponding topic, \texttt{Duino Elegies}. Accordingly, words corresponding to weak documents were identified, and sentences containing these words were subsequently removed from the categories. For \texttt{Duino Elegies}, this resulted in more concise documents,
 
 \[
 	\begin{array}{lll}
@@ -205,7 +209,7 @@ This process initially included many categories that were too vague or general f
 
 
 \subsection{Logistic Regression}
-Logistic regression was used to attempt to answer the science questions.  L2 Regularization was used.  Many different feature sets where used to train the lr model.  The following subsections will go into detail each feature set used, and the results from said feature set. \\
+Logistic regression, via L2 regularization, was incorporated to optimize the various concepts discussed above such that each method could be weighted against the others to answer the greatest number of questions possible.  Many different feature sets where used to train the logistic regression model, and the following subsection will discuss each feature as well as the accompanied results from that said feature. \\
 
 The primary regression parameters correspond to the NLP Similarity and Topic Model approaches our team developed for this project. Logistic regression internally optimizes the weights associated with each task, favoring a combination of the main algorithms with higher preference given to the NLP process. Beta coefficients for each task are displayed below,
 
@@ -236,26 +240,34 @@ The associated lengths with respect to each of these categories was included in 
 \noindent As an interpretation to these parameters, a longer Wikipedia summary in relation to an answer choice indicates a slightly higher possibility for that answer choice to be correct, while a longer Wikipedia title, or the length of the answer choice, indicates a strong possibility that the answer choice is incorrect. Both high NLP Similarity and Topic Model scores indicate a strong preference that a corresponding answer choice is correct.
 
 \subsubsection{Baseline: Sample Questions Only}
-This was the first featureset we used, and was used as our baseline percentage.  The training data consisted of 5441 questions.  Each question was a sentence, that had four possible answers.  The label assigned to each question was the correct answer, which is given in the training data set.  The sentences were put through a count vectorizer, using a list of common English stop words and removing the accents from each letter.  The testing set follows the same format, with 785 test questions.  The difference is that the test questions do not have a known correct answer, but four possible answers. \\
+Initially, as our baseline percentage, the first feature set we incorporated into our model consisted entirely of 5441 sample questions from the training data.  Each question was a sentence that had four possible answers, and the label assigned to each question was the correct answer which was given in the training data set.\\
 
-There was a slight problem, the testing set had questions that were not covered by correct answers in the training sets.  While additional features could be added to cover these missing labels, a workaround was used for the baseline.  Once the LR was trained, the probabilities for each possible question was generated.  Then, the probabilities from logistic regression for the four possible answers were calculated.  If all answers were assigned a probability, meaning they were in the training set, the answer with the highest probability was chosen.  If not, and there is a answer with a zero probability, the difference between the first best and second best answer was examined.  If the difference between their probabilities was small, then the unknown question was chosen, because the classifier cannot decide between two of the known options. \\
+ The sentences were then placed through a count vectorizer, using a list of common English stop words and removing any accents from each letter.  The testing set follows the same format as the training data, containing 785 test questions, with the main difference being that the test questions do not have a known correct answer, but four possible answers. \\
 
-This method scored surprisingly well, scoring a 63 percent on Kaggle.  This came as a shock, because the training data is not complete for the testing data.  Cross validation was not performed with this method( but was performed for all of the remaining logistic regression attempts) because there was simply not enough information in the training set, cross validation could remove more valid answers from all of the labels.  The success of this method showed that there is promise in cross-validation, and that better percentages by adding further features could possibly be obtained.
+There was a slight problem: the testing set had questions that were not covered by correct answers in the training sets.  While additional features could be added to cover these missing labels, a workaround was used for the baseline.  Once the logistic regression was trained, the probabilities for each possible question were generated, and the probabilities from logistic regression for each possible answer was calculated. \\
 
-\subsubsection{Wikipedia summary sentences}
-Since the previous logistic regression with limited data gave good results, we tried to expand on it using Wikipedia data.  The Wikipedia data we extracted for each question has a summary section, which contains a small amount of sentences that give a good summary on each answer.\\
+ If all answers were assigned a probability, meaning they were contained within the training set, the answer with the highest probability was chosen.  If not, and there was an answer with zero probability of being correct, then the difference between the first and second best answers were examined.  If this difference was small, then the unknown question was chosen because the classifier could not decide between the two known options. \\
 
-Using the whole summary did not work very well.  However, looking at the structure of the testing data, each test question is approximately one sentence, while each training example is also approximately one sentence.  To emulate this, each Wikipedia summary was separated by periods.  This gave multiple strings that most likely were a single sentence.  This was then added to the logistic regression model, as training data.\\
+This method scored surprisingly well, since the training data was not complete for the testing set, and resulted in about a 63 percent accuracy rating on Kaggle.  Cross validation was not performed with this method (but was performed for all of the remaining logistic regression attempts) because there was simply not enough information in the training set - cross validation could potentially remove more valid answers from all of the labels.  \\
 
-In this case, there was enough data to use cross validation.  We used 10 percent of the training set as the testing set.  After separating the training into two sets of training and test data, the cross-validation achieved a 72 percent accuracy.  When submitted to Kaggle, it scored a 65 percent accuracy.\\
+Nevertheless, the success of this method showed that there was promise in cross-validation, and that better accuracy could possibly be obtained by adding additional features.
 
-Other wikipedia features were tried, such as using the categories, but no noticeable increase in accuracy was found.\\
+\subsubsection{Wikipedia Summary Sentences}
+Since the previous logistic regression with limited data produced decent results, we tried to expand on the method using additional Wikipedia data.  These data extracted for each question contained a summary section, which provided a small number of sentences describing a good summary on each answer.\\
+
+Using the whole summary did not work very well.  Nevertheless, looking at the structure of the testing data, each test question was approximately one sentence long, while each training example was also approximately one sentence.  To emulate this, each Wikipedia summary was separated by periods, gaving multiple strings that most likely were a single sentence.  These were then added to the logistic regression model, as additional training data.\\
+
+Unlike the last case, in this instance there were enough data to use cross validation.  After separating the training into two sets of training and test data, using 10 percent of the training set as the testing set, the cross-validation achieved 72 percent accuracy.  When submitted to Kaggle, the model scored 65 percent accuracy.\\
+
+Other Wikipedia features were also incorporated, such as using their categories, but no noticeable increase in accuracy was obtained.\\
 \label{ssec:log_reg}
 
 \subsection{Final ensemble learner}
-Because both logistic regression, topic models, and cosine similarity gave good results, we attempted to combine the results into an ensemble learner.  To accomplish this, the logistic regression moe\\l with Wikipedia summaries found the probability of the four possible answers, and normalized them so they would add up to 100 percent.  The topic model and cosine similarity gave similar measurements, and were normalized too add up to one as well, for the four possible answers.  A scaling factor was given to each of these vectors, and they were summed.  The answer with the highest sum was chosen.  The cosine similarity was given a scaling factor of 1.5, the topic model a scaling factor of .75, and the logistic regression learner a scaling factor of one.
+Because the logistic regression, topic models, and cosine similarity methods all provided good results, we combined their algorithms into one ensemble learner.  To accomplish this, the logistic regression with Wikipedia summaries found the corresponding probabilities of the four possible answers, while the topic model and cosine similarity gave similar measurements for each answer. \\
 
-This achieved an average of 82.5 percent in cross validation.  In addition to this, the final hidden testing set got a 79 percent accuracy on Kaggle.  This was the highest percentage we achieved. \\
+The scores were all normalized, and a scaling factor was given to each of these resulting vectors before they were summed together. More specifically, the cosine similarity was assigned a scaling factor of 1.5, the topic model a scaling factor of .75, and the logistic regression learner a scaling factor of one.  The answer with the highest sum was chosen from the four possibilities. \\
+
+This achieved an average of 82.5 percent in cross validation.  In addition to this, the final hidden testing set got a 79 percent accuracy on Kaggle, which was the highest percentage we achieved. \\
 
 
 
