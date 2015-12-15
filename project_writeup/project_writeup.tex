@@ -125,9 +125,13 @@
 \begin{document}
 \maketitle
 
-We competed in the science question answering project.  Our team name is Milksteak, after the fine cuisine.\\
+We competed in the science question answering project.  Our team name is Milksteak, after the fine cuisine. The science question answer project is posed as follows: 
 
-The science question answer project is posed as follows.  We are given a training and testing set of questions and answers.  Each question, generally including a few proper nouns, has four possible answers, only one of which is correct.  Each answer corresponds (almost directly) to a Wikipedia page title.  Our code should attempt to answer the questions correctly.\\
+    \begin{center}
+        \textit{We are given a training and testing set of questions and answers, and each question has four possible answers, only one of which is correct.}
+    \end{center}
+
+Questions generally include a few proper nouns, and each answer corresponds, almost directly, to a Wikipedia page title.  Our code should attempt to answer the questions correctly. \\
 
 We used the Python \texttt{wikipedia} module to download text data from Wikipedia pages.  Our code is available on James' \href{https://github.com/jamesfolberth/ml_project}{Github page}.\\
 
@@ -154,7 +158,7 @@ We began this project by inspecting a sample of questions and answers to try to 
 	(a) Xylem (b) {\color{green}Echinoderm} (c) Sponge (d) Mitochondrian
 \end{enumerate} 
 
-These questions, which make up roughly 63$\%$ of the dataset, use the keywords "this" and "these" to indicate a general category that an answer must fit. For example 1 above the correct answer must be an organelle which immediately eliminates answers (b) and (d), while in example 2 only answer (b) fits the category of phylum and must therefor be the correct answer. To analyze these questions we first utilized the NLTK to  perform part-of-speech tagging on all of the questions in the dataset. These POS tags were used to find the noun that most immediately follows the keywords, which became the answer category. We then attempted to utilize the PyGoogle module to make queries to Google to help determine whether an answer was a member of the necesary category for each question. The Google queries continually threw exceptions and we eventually decided to use only the Wikipedia data to eliminate answers. To do this we counted the number of occurances of the category word in each answer's Wiki page. To reduce the false positive rate we only answered questions where the category appeared in a single answer's Wiki at least "max num" times and appeared in every other answers' Wiki less than "min num" times. The performance for different combinations  of these parameters are summarized in the table below:\\
+These questions, which make up roughly 63$\%$ of the dataset, use the keywords "this" and "these" to indicate a general category that an answer must fit. For example 1 above the correct answer must be an organelle which immediately eliminates answers (b) and (d), while in example 2 only answer (b) fits the category of phylum and must therefor be the correct answer. To analyze these questions we first utilized the NLTK to  perform part-of-speech tagging on all of the questions in the dataset. These POS tags were used to find the noun that most immediately follows the keywords, which became the answer category. We then attempted to utilize the PyGoogle module to make queries to Google to help determine whether an answer was a member of the necessary category for each question. The Google queries continually threw exceptions and we eventually decided to use only the Wikipedia data to eliminate answers. To do this we counted the number of occurrences of the category word in each answer's Wiki page. To reduce the false positive rate we only answered questions where the category appeared in a single answer's Wiki at least "max num" times and appeared in every other answers' Wiki less than "min num" times. The performance for different combinations  of these parameters are summarized in the table below:\\
 
 \begin{center}
 \begin{tabular}{l*{6}{c}r}
@@ -232,7 +236,7 @@ The associated lengths with respect to each of these categories was included in 
 \noindent As an interpretation to these parameters, a longer Wikipedia summary in relation to an answer choice indicates a slightly higher possibility for that answer choice to be correct, while a longer Wikipedia title, or the length of the answer choice, indicates a strong possibility that the answer choice is incorrect. Both high NLP Similarity and Topic Model scores indicate a strong preference that a corresponding answer choice is correct.
 
 \subsubsection{Baseline: Sample Questions Only}
-This was the first featureset we used, and was used as our baseline percentage.  The training data consisted of 5441 questions.  Each question was a sentence, that had four possible answers.  The label assigned to each question was the correct answer, which is given in the training data set.  The sentences were put through a count vectorizer, using a list of common english stop words and removing the accents from each letter.  The testing set follows the same format, with 785 test questions.  The difference is that the test questions do not have a known correct answer, but four possible answers. \\
+This was the first featureset we used, and was used as our baseline percentage.  The training data consisted of 5441 questions.  Each question was a sentence, that had four possible answers.  The label assigned to each question was the correct answer, which is given in the training data set.  The sentences were put through a count vectorizer, using a list of common English stop words and removing the accents from each letter.  The testing set follows the same format, with 785 test questions.  The difference is that the test questions do not have a known correct answer, but four possible answers. \\
 
 There was a slight problem, the testing set had questions that were not covered by correct answers in the training sets.  While additional features could be added to cover these missing labels, a workaround was used for the baseline.  Once the LR was trained, the probabilities for each possible question was generated.  Then, the probabilities from logistic regression for the four possible answers were calculated.  If all answers were assigned a probability, meaning they were in the training set, the answer with the highest probability was chosen.  If not, and there is a answer with a zero probability, the difference between the first best and second best answer was examined.  If the difference between their probabilities was small, then the unknown question was chosen, because the classifier cannot decide between two of the known options. \\
 
@@ -243,13 +247,13 @@ Since the previous logistic regression with limited data gave good results, we t
 
 Using the whole summary did not work very well.  However, looking at the structure of the testing data, each test question is approximately one sentence, while each training example is also approximately one sentence.  To emulate this, each Wikipedia summary was separated by periods.  This gave multiple strings that most likely were a single sentence.  This was then added to the logistic regression model, as training data.\\
 
-In this case, there was enough data to use cross validation.  We used 10 percent of the training set as the testing set.  After seperating the training into two sets of training and test data, the cross-validation achieved a 72 percent accuracy.  When submitted to Kaggle, it scored a 65 percent accuracy.\\
+In this case, there was enough data to use cross validation.  We used 10 percent of the training set as the testing set.  After separating the training into two sets of training and test data, the cross-validation achieved a 72 percent accuracy.  When submitted to Kaggle, it scored a 65 percent accuracy.\\
 
-Other wikipedia features were tried, such as using the categories, but no noticable increase in accuracy was found.\\
+Other wikipedia features were tried, such as using the categories, but no noticeable increase in accuracy was found.\\
 \label{ssec:log_reg}
 
 \subsection{Final ensemble learner}
-Because both logistic regression, topic models, and cosine similarity gave good results, we attempted to combine the results into an ensemble learner.  To accomplish this, the logistic regresion moe\\l with wikipedia summaries found the probability of the four possible answers, and normalized them so they would add up to 100 percent.  The topic model and cosine similarity gave similar measurements, and were normalized too add up to one as well, for the four possible answers.  A scaling factor was given to each of these vectors, and they were summed.  The answer with the highest sum was chosen.  The cosine similarity was given a scaling factor of 1.5, the topic model a scaling factor of .75, and the logistic regression learner a scaling factor of one.
+Because both logistic regression, topic models, and cosine similarity gave good results, we attempted to combine the results into an ensemble learner.  To accomplish this, the logistic regression moe\\l with Wikipedia summaries found the probability of the four possible answers, and normalized them so they would add up to 100 percent.  The topic model and cosine similarity gave similar measurements, and were normalized too add up to one as well, for the four possible answers.  A scaling factor was given to each of these vectors, and they were summed.  The answer with the highest sum was chosen.  The cosine similarity was given a scaling factor of 1.5, the topic model a scaling factor of .75, and the logistic regression learner a scaling factor of one.
 
 This achieved an average of 82.5 percent in cross validation.  In addition to this, the final hidden testing set got a 79 percent accuracy on Kaggle.  This was the highest percentage we achieved. \\
 
