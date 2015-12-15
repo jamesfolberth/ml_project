@@ -12,4 +12,13 @@ project_writeup/project_writeup.log
 project_writeup/project_writeup.out
 project_writeup/project_writeup.pdf
 
+slides/slides.aux
+slides/slides.log
+slides/slides.nav
+slides/slides.out
+slides/slides.pdf
+slides/slides.snm
+slides/slides.toc
+
+
 data/our_answers*

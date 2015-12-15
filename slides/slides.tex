@@ -4,7 +4,7 @@
 \usepackage{lmodern}
 \usepackage{hyperref}
 
-\title[Science Questions]{Answering Questions about Science}
+\title[Science Questions]{Answering Questions about Science - Milksteak}
 \subtitle[Application]{Quiz Bowl Science}
 \author[Cowley, Folberth, Reiersen, Wiley]{Andrew Cowley, James Folberth, Derek Reiersen, Benjamin Wiley}
 \institute[CU Boulder]{
@@ -22,29 +22,83 @@ University of Colorado at Boulder
 
 %----------------------------------------------------------------------------------------------------------------------------------
 
-\begin{frame}{Overview}
-	\tableofcontents
+% Our talk is short; don't want to spend time on an overview.
+%\begin{frame}{Overview}
+%	\tableofcontents
+%\end{frame}
+
+
+\begin{frame}{Problem Statement}
+   \begin{itemize}
+      \item We're given a bunch of multiple choice science questions, where each answer (almost) corresponds to a Wikipedia page title.\\
+      \item The goal is to predict the correct answer to new questions.
+   \end{itemize}
+
+   Example: ``This phenomenon occurs twice as quickly in the Moran model as in the Wright-Fisher model.''
+   \begin{enumerate}
+      \item Genetic drift
+      \item Hamiltonian (quantum mechanics)
+      \item Georg Wilhelm Friedrich Hegel
+      \item Group (mathematics)
+   \end{enumerate}
 \end{frame}
+
 
 %----------------------------------------------------------------------------------------------------------------------------------
 
 \section{Methods}
 
-\subsection{Cosine Similarity}
+%\subsection{A little NLP}
+\begin{frame}{A little NLP}
+   \begin{itemize}
+      \item Download and cache Wikipedia summary, categories, full text, etc.
+      \item Lemmatize question strings and Wiki summaries (shorter than full text).
+      \item Try to emphasize proper nouns (e.g. Moran model).
+      \item Count tokens and build feature vector.
+   \end{itemize}
+\end{frame}
+
+
+
+%\subsection{Cosine Similarity}
 \begin{frame}{Cosine Similarity}
+  A standard method to compare documents is to use the cosine similarity of feature vectors:
 
+  \[ \text{similarity}_{ij} = \cos\theta_{ij} = \dfrac{\langle x_i, x_j\rangle}{\|x_i\| \|x_j\|}. \] 
+
+  Which features are ``turned on'' together?\\
+
+  Using only this gets about $70\%$ on our development set.
+\end{frame}
+
+
+% Looks like adding the proper noun features isn't helping much here.
+% this is also reflected by removing the NNP features entirely; we still score ~70% on the dev set
+% The questions are feature dense (e.g. just have to find ``Birch-Murnaghan''), but we're not using this fully
+% Not many links on Bulk modulus page.  If we were better at NLP, we might try to search Wikipedia for ``Birch-Murnaghan'' or ``Cauchys Number''.  That seems hard...
+\begin{frame}{Cosine Similarity}
+   Example: ``The Birch-Murnaghan equation of state takes volume and this parameter at zero pressure as its arguments, and Cauchys Number in compressible flows is inversely proportional to this quantity.''\\[1em]
+   {\color{green}Correct}: Bulk modulus\\
+   {\color{red}Our Answer}: Hamiltonian (quantum mechanics)\\[1em]
+
+   ``equation'' and ``state'' occur very frequently in the Hamiltonian page (long), but infrequently in Bulk modulus page (short).\\
 \end{frame}
 
 %----------------------------------------------------------------------------------------------------------------------------------
 
-\subsection{Topic Model}
+% Surprisingly, using LDA gets the Bulk modulus v. Hamiltonian question right. (using 75%-25% split).
+%\subsection{Topic Model}
 \begin{frame}{Topic Model}
-
+   \begin{itemize}
+      \item We also tried to use a topic model to categorize the Wiki pages.
+      \item Doesn't work well on its own, but helps other methods a little bit.
+      \item Probably just picking the low-hanging fruit.
+   \end{itemize}
 \end{frame}
 
 %----------------------------------------------------------------------------------------------------------------------------------
 
-\subsection{Features}
+%\subsection{Features}
 \begin{frame}{Features}
 
 \end{frame}
@@ -53,14 +107,14 @@ University of Colorado at Boulder
 
 \section{Optimization}
 
-\subsection{Logistic Regression}
+%\subsection{Logistic Regression}
 \begin{frame}{Logistic Regression}
 
 \end{frame}
 
 %----------------------------------------------------------------------------------------------------------------------------------
 
-\subsection{Strong Ensemble Boosting}
+%\subsection{Strong Ensemble Boosting}
 \begin{frame}{Strong Ensemble Boosting}
 
 \end{frame}
@@ -68,7 +122,7 @@ University of Colorado at Boulder
 %----------------------------------------------------------------------------------------------------------------------------------
 
 \section{Conclusion}
-\subsection{Results}
+%\subsection{Results}
 \begin{frame}{Conclusion: Results}
 
 \end{frame}

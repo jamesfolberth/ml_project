@@ -105,6 +105,12 @@ def test_xval(questions, X, fv, scorer=similarity.Scorer.cosine,\
         num_total += 1
         if oa == correct_answer:
             num_correct += 1
+        else: # wrong
+            print (q['question'])
+            print (q['answer{}'.format(correct_answer)])
+            print (q['answer{}'.format(oa)])
+            print 
+
     
     accuracy = float(num_correct)/float(num_total)
     return accuracy
@@ -256,7 +262,12 @@ def answer_xval(args):
         print ("Loading precomputed feature strings for trainx and testx:")
         trainx, testx, fs, fv, analyzer, feat = \
                 pickle.load(open('../data/xval_feat_strings.pkl', 'rb'))
-    
+
+    #XXX use this one instead   
+    #feat = None
+    #analyzer = similarity.Analyzer()
+    #feat = similarity.Featurizer(analyzer, pages_dict)
+
     ## Here we do some cross-validation
     X = feat.compute_feats(fs)
     X = X.tocsr() # might already be CSR
