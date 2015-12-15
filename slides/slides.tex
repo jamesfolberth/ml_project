@@ -5,6 +5,8 @@
 \usepackage{hyperref}
 \usepackage{color}
 
+\usenavigationsymbolstemplate{}
+
 \title[Science Questions - Milksteak]{Answering Questions about Science - Milksteak}
 \subtitle[Application]{Quiz Bowl Science}
 \author[Cowley, Folberth, Reiersen, Wiley]{Andrew Cowley, James Folberth, Derek Reiersen, Benjamin Wiley}
@@ -31,13 +33,13 @@ University of Colorado at Boulder
 
 \begin{frame}{Problem Statement}
    \begin{itemize}
-      \item We're given a bunch of multiple choice science questions, where each answer (almost) corresponds to a Wikipedia page title.\\
+      \item We're given a bunch of multiple choice science questions, where each answer corresponds to a Wikipedia page title.\\
       \item The goal is to predict the correct answer to new questions.
    \end{itemize}
 
    Example: ``This phenomenon occurs twice as quickly in the Moran model as in the Wright-Fisher model.''
    \begin{enumerate}
-      \item Genetic drift
+      \item {\color{green} Genetic drift}
       \item Hamiltonian (quantum mechanics)
       \item Georg Wilhelm Friedrich Hegel
       \item Group (mathematics)
@@ -52,9 +54,9 @@ University of Colorado at Boulder
 \begin{frame}{Text-Based Logistic Regression Baseline}
    \begin{itemize}
       \item Use training question with correct answer as training data
-      \item 62 percent baseline
-      \item Improve by using wikipedia summary sentences as additional training data
-      \item 72 percent on cross-validation, 65 percent on Kaggle
+      \item 62\% baseline
+      \item Improve by using Wikipedia summary sentences as additional training data
+      \item 72\% on cross-validation, 65 percent on Kaggle
    \end{itemize}
 \end{frame}
 
@@ -63,7 +65,7 @@ University of Colorado at Boulder
 %\subsection{A little NLP}
 \begin{frame}{A little NLP}
    \begin{itemize}
-      \item Download and cache Wikipedia summary, categories, full text, etc.
+      \item Download and cache Wiki summary, categories, full text, etc.
       \item Lemmatize question strings and Wiki summaries (shorter than full text).
       \item Try to emphasize proper nouns (e.g. {\color{blue} Moran model} of genetic drift).
       \item Count tokens and build feature vector.
