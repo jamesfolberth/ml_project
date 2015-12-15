@@ -134,7 +134,23 @@ University of Colorado at Boulder
 
 %\subsection{Features}
 \begin{frame}{Features}
+    Each Wiki page contains:
+        \[
+            \begin{array}{llllll}
+                [ \texttt{links}, & \texttt{title}, & \texttt{summary}, & \texttt{content}, & \texttt{sections}, & \texttt{categories}]
+            \end{array}\]
+     Lengths of each computed and added as predictive data: \\
 
+        \begin{itemize}
+            \item {\color{blue}Magnetic field}
+	\begin{itemize}
+		\item \texttt{Title} $\longrightarrow$ string length of {\color{red}$14$}
+		\item \texttt{Links} $\longrightarrow$ string length of {\color{red}$0$}
+		\item \texttt{Summary} $\longrightarrow$ string length of {\color{red}$1924$}
+		\item \texttt{Content} $\longrightarrow$ string length of {\color{red}$85336$}
+		\item \texttt{Categories} $\longrightarrow$ string length of {\color{red}$0$}
+	\end{itemize}
+        \end{itemize}
 \end{frame}
 
 %----------------------------------------------------------------------------------------------------------------------------------
