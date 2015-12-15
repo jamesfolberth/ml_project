@@ -3,6 +3,7 @@
 \usepackage{amsmath}
 \usepackage{lmodern}
 \usepackage{hyperref}
+\usepackage{color}
 
 \title[Science Questions]{Answering Questions about Science - Milksteak}
 \subtitle[Application]{Quiz Bowl Science}
@@ -58,7 +59,27 @@ University of Colorado at Boulder
    \end{itemize}
 \end{frame}
 
+%\subsection{NLP to Eliminate Answers}
+\begin{frame}{NLP to Eliminate Answers}
+   \begin{itemize}
+      \item Antibodies that localize to {\color{red}this} {\color{green}organelle} are associated with Sjogren\'s ("SHOW-grenz") syndrome, and a deficiency of a phosphatase localized to it causes Lowe\'s syndrome.
 
+	(a) {\color{green}Golgi Apparatus} (b) Apoptosis (c) {\color{green}Peroxisome} (d) Collagen
+
+      \item {\color{red}This} {\color{green}phylum's} members have a pair of pouches that split from the archenteron, with each pouch constricting into three portions. 
+
+	(a) Xylem (b) {\color{green}Echinoderm} (c) Sponge (d) Mitochondrian
+   \end{itemize}
+\end{frame}
+
+%\subsection{NLP to Eliminate Answers}
+\begin{frame}{NLP to Eliminate Answers}
+   \begin{itemize}
+      \item NLTK part-of-speech tagger to determine answer category
+      \item Use Wikipedia data along with the PyGoogle module to gain insight answer-category relationship
+      \item Eliminate options with a very low false positive rate
+   \end{itemize}
+\end{frame}
 
 %\subsection{Cosine Similarity}
 \begin{frame}{Cosine Similarity}
