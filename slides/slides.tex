@@ -105,7 +105,7 @@ University of Colorado at Boulder
    ``equation'' and ``state'' occur very frequently in the Hamiltonian page (long), but infrequently in Bulk modulus page (short).\\
 \end{frame}
 
-\begin{frame}{Logistic Regression Baseline}
+\begin{frame}{Text-Based Logistic Regression Baseline}
    \begin{itemize}
       \item Use training question with correct answer as training data
       \item 62 percent baseline
@@ -146,7 +146,12 @@ University of Colorado at Boulder
 
 %\subsection{Strong Ensemble Boosting}
 \begin{frame}{Strong Ensemble Boosting}
-
+   \begin{itemize}
+      \item Combine best learners together
+      \item Use text based log-reg with wiki pages
+      \item Use topic model and cosine similarity
+      \item Normalize, and weight each learner
+   \end{itemize}
 \end{frame}
 
 %----------------------------------------------------------------------------------------------------------------------------------
