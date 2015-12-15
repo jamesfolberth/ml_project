@@ -5,7 +5,7 @@
 \usepackage{hyperref}
 \usepackage{color}
 
-\title[Science Questions]{Answering Questions about Science - Milksteak}
+\title[Science Questions - Milksteak]{Answering Questions about Science - Milksteak}
 \subtitle[Application]{Quiz Bowl Science}
 \author[Cowley, Folberth, Reiersen, Wiley]{Andrew Cowley, James Folberth, Derek Reiersen, Benjamin Wiley}
 \institute[CU Boulder]{
@@ -49,35 +49,24 @@ University of Colorado at Boulder
 
 \section{Methods}
 
+\begin{frame}{Text-Based Logistic Regression Baseline}
+   \begin{itemize}
+      \item Use training question with correct answer as training data
+      \item 62 percent baseline
+      \item Improve by using wikipedia summary sentences as additional training data
+      \item 72 percent on cross-validation, 65 percent on Kaggle
+   \end{itemize}
+\end{frame}
+
+
+
 %\subsection{A little NLP}
 \begin{frame}{A little NLP}
    \begin{itemize}
       \item Download and cache Wikipedia summary, categories, full text, etc.
       \item Lemmatize question strings and Wiki summaries (shorter than full text).
-      \item Try to emphasize proper nouns (e.g. Moran model).
+      \item Try to emphasize proper nouns (e.g. {\color{blue} Moran model} of genetic drift).
       \item Count tokens and build feature vector.
-   \end{itemize}
-\end{frame}
-
-%\subsection{NLP to Eliminate Answers}
-\begin{frame}{NLP to Eliminate Answers}
-   \begin{itemize}
-      \item Antibodies that localize to {\color{red}this} {\color{green}organelle} are associated with Sjogren\'s ("SHOW-grenz") syndrome, and a deficiency of a phosphatase localized to it causes Lowe\'s syndrome.
-
-	(a) {\color{green}Golgi Apparatus} (b) Apoptosis (c) {\color{green}Peroxisome} (d) Collagen
-
-      \item {\color{red}This} {\color{green}phylum's} members have a pair of pouches that split from the archenteron, with each pouch constricting into three portions. 
-
-	(a) Xylem (b) {\color{green}Echinoderm} (c) Sponge (d) Mitochondrian
-   \end{itemize}
-\end{frame}
-
-%\subsection{NLP to Eliminate Answers}
-\begin{frame}{NLP to Eliminate Answers}
-   \begin{itemize}
-      \item NLTK part-of-speech tagger to determine answer category
-      \item Use Wikipedia data along with the PyGoogle module to gain insight answer-category relationship
-      \item Eliminate options with a very low false positive rate
    \end{itemize}
 \end{frame}
 
@@ -105,14 +94,29 @@ University of Colorado at Boulder
    ``equation'' and ``state'' occur very frequently in the Hamiltonian page (long), but infrequently in Bulk modulus page (short).\\
 \end{frame}
 
-\begin{frame}{Text-Based Logistic Regression Baseline}
+
+%\subsection{NLP to Eliminate Answers}
+\begin{frame}{NLP to Eliminate Answers}
    \begin{itemize}
-      \item Use training question with correct answer as training data
-      \item 62 percent baseline
-      \item Improve by using wikipedia summary sentences as additional training data
-      \item 72 percent on cross-validation, 65 percent on kaggle
+      \item Antibodies that localize to {\color{red}this} {\color{green}organelle} are associated with Sjogren\'s ("SHOW-grenz") syndrome, and a deficiency of a phosphatase localized to it causes Lowe\'s syndrome.
+
+	(a) {\color{green}Golgi Apparatus} (b) Apoptosis (c) {\color{green}Peroxisome} (d) Collagen
+
+      \item {\color{red}This} {\color{green}phylum's} members have a pair of pouches that split from the archenteron, with each pouch constricting into three portions. 
+
+	(a) Xylem (b) {\color{green}Echinoderm} (c) Sponge (d) Mitochondrian
    \end{itemize}
 \end{frame}
+
+%\subsection{NLP to Eliminate Answers}
+\begin{frame}{NLP to Eliminate Answers}
+   \begin{itemize}
+      \item NLTK part-of-speech tagger to determine answer category
+      \item Use Wikipedia data along with the PyGoogle module to gain insight answer-category relationship
+      \item Eliminate options with a very low false positive rate
+   \end{itemize}
+\end{frame}
+
 
 %----------------------------------------------------------------------------------------------------------------------------------
 
@@ -122,7 +126,7 @@ University of Colorado at Boulder
    \begin{itemize}
       \item We also tried to use a topic model to categorize the Wiki pages.
       \item Doesn't work well on its own, but helps other methods a little bit.
-      \item Probably just picking the low-hanging fruit.
+      \item Possibly just picking the low-hanging fruit.
    \end{itemize}
 \end{frame}
 
