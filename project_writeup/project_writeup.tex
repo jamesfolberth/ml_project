@@ -139,7 +139,7 @@ In addition, we used the Python \texttt{wikipedia} module to download text data 
 
 \subsection{NLP and Feature Vectors}
 \label{ssec:nlp}
-One of our first ideas is to lemmatize, and make $n$-grams out of, the text in the questions and the Wiki page summary and content.  We also attempted to emphasize proper nouns in the question and Wiki summaries.  We vectorized the lemmatized ``feature strings'' using \texttt{sklearn}'s TF-IDF vectorizer.  It is common to use the cosine similarity measure to compare these feature vectors as a measure of the similarity of the two documents.
+One of our first ideas is to lemmatize, and make $n$-grams out of, the text in the questions and the Wikipedia page summary and content.  We also attempted to emphasize proper nouns in the question and Wikipedia summaries.  We vectorized the lemmatized ``feature strings'' using \texttt{sklearn}'s TF-IDF vectorizer.  It is common to use the cosine similarity measure to compare these feature vectors as a measure of the similarity of the two documents.
 
 \[ \text{similarity}_{ij} = \cos(\theta_{ij}) = \dfrac{\langle v_i, v_j\rangle}{\|v_i\|\|v_j\|}. \] 
 
@@ -151,7 +151,7 @@ One of our first ideas is to lemmatize, and make $n$-grams out of, the text in t
 We began this project by inspecting a sample of questions and answers to try identifying a structure that we could exploit in order to determine correct answers. When we observed that a majority of the questions were phrased in a similar manner to the examples shown below, we decided that an NLP approach to eliminate answers could be effective (Andrew took the lead on this):
 
 \begin{enumerate}
-      \item Antibodies that localize to {\color{red}this} {\color{green}organelle} are associated with Sjogren\'s ("SHOW-grenz") syndrome, and a deficiency of a phosphatase localized to it causes Lowe\'s syndrome.
+      \item Antibodies that localize to {\color{red}this} {\color{green}organelle} are associated with Sjogren\'s (``SHOW-grenz") syndrome, and a deficiency of a phosphatase localized to it causes Lowe\'s syndrome.
 
 	(a) {\color{green}Golgi Apparatus} (b) Apoptosis (c) {\color{green}Peroxisome} (d) Collagen
 
@@ -160,11 +160,11 @@ We began this project by inspecting a sample of questions and answers to try ide
 	(a) Xylem (b) {\color{green}Echinoderm} (c) Sponge (d) Mitochondrian
 \end{enumerate} 
 
-These questions, which make up roughly 63$\%$ of the dataset, use the keywords "this" and "these" to indicate a general category that an answer must fit. For example (1.) above, the correct answer must be an organelle which immediately eliminates answers (b) and (d), while in example 2 only answer (b) fits the category of phylum and must therefore be the correct answer. \\
+These questions, which make up roughly 63$\%$ of the dataset, use the keywords ``this" and ``these" to indicate a general category that an answer must fit. For example (1.) above, the correct answer must be an organelle which immediately eliminates answers (b) and (d), while in example 2 only answer (b) fits the category of phylum and must therefore be the correct answer. \\
 
 To analyze these questions we first utilized the NLTK to  perform part-of-speech tagging on all of the questions in the dataset. These POS tags were used to find the noun that most immediately follows the keywords, which became the answer category. We then attempted to utilize the PyGoogle module to make queries to Google to help determine whether an answer was a member of the necessary category for each question. \\
 
-However, the Google queries continually threw exceptions and we eventually decided to use only the Wikipedia data to eliminate answers by counting the number of occurrences of the category word in each answer's Wiki page. To reduce the false positive rate we only answered questions where the category appeared in a single answer's Wiki at least "max num" times and appeared in every other answers' Wiki less than "min num" times. The performance for different combinations  of these parameters are summarized in the table below:\\
+However, the Google queries continually threw exceptions and we eventually decided to use only the Wikipedia data to eliminate answers by counting the number of occurrences of the category word in each answer's Wikipedia page. To reduce the false positive rate we only answered questions where the category appeared in a single answer's Wikipedia at least ``max num" times and appeared in every other answers' Wikipedia less than ``min num" times. The performance for different combinations  of these parameters are summarized in the table below:\\
 
 \begin{center}
 \begin{tabular}{l*{6}{c}r}
@@ -239,10 +239,11 @@ The associated lengths with respect to each of these categories was included in 
 	\end{array}
 \]
 
-\noindent As an interpretation to these parameters, a longer Wikipedia summary in relation to an answer choice indicates a slightly higher possibility for that answer choice to be correct, while a longer Wikipedia title, or the length of the answer choice, indicates a strong possibility that the answer choice is incorrect. Both high NLP Similarity and Topic Model scores indicate a strong preference that a corresponding answer choice is correct.
+\noindent As an interpretation to these parameters, a longer Wikipedia summary in relation to an answer choice indicates a slightly higher possibility for that answer choice to be correct, while a longer Wikipedia title, or the length of the answer choice, indicates a strong possibility that the answer choice is incorrect. Both high NLP Similarity and Topic Model scores indicate a strong preference that a corresponding answer choice is correct.\\
 
-Derek took the lead on the following features
 \subsubsection{Baseline: Sample Questions Only}
+Derek took the lead on the following features:\\
+
 Initially, as our baseline percentage, the first feature set we incorporated into our model consisted entirely of 5441 sample questions from the training data.  Each question was a sentence that had four possible answers, and the label assigned to each question was the correct answer which was given in the training data set.\\
 
  The sentences were then placed through a count vectorizer, using a list of common English stop words and removing any accents from each letter.  The testing set follows the same format as the training data, containing 785 test questions, with the main difference being that the test questions do not have a known correct answer, but four possible answers. \\
@@ -258,7 +259,7 @@ Nevertheless, the success of this method showed that there was promise in cross-
 \subsubsection{Wikipedia Summary Sentences}
 Since the previous logistic regression with limited data produced decent results, we tried to expand on the method using additional Wikipedia data.  These data extracted for each question contained a summary section, which provided a small number of sentences describing a good summary on each answer.\\
 
-Using the whole summary did not work very well.  Nevertheless, looking at the structure of the testing data, each test question was approximately one sentence long, while each training example was also approximately one sentence.  To emulate this, each Wikipedia summary was separated by periods, gaving multiple strings that most likely were a single sentence.  These were then added to the logistic regression model, as additional training data.\\
+Using the whole summary did not work very well.  Nevertheless, looking at the structure of the testing data, each test question was approximately one sentence long, while each training example was also approximately one sentence.  To emulate this, each Wikipedia summary was separated by periods, giving multiple strings that most likely were a single sentence.  These were then added to the logistic regression model, as additional training data.\\
 
 Unlike the last case, in this instance there were enough data to use cross validation.  After separating the training into two sets of training and test data, using 10 percent of the training set as the testing set, the cross-validation achieved 72 percent accuracy.  When submitted to Kaggle, the model scored 65 percent accuracy.\\
 
@@ -266,7 +267,7 @@ Other Wikipedia features were also incorporated, such as using their categories,
 \label{ssec:log_reg}
 
 \subsection{Final ensemble learner}
-Derek took the lead on assembling the ensemble
+Derek took the lead on assembling the ensemble.\\
 
 Because the logistic regression, topic models, and cosine similarity methods all provided good results, we combined their algorithms into one ensemble learner.  To accomplish this, the logistic regression with Wikipedia summaries found the corresponding probabilities of the four possible answers, while the topic model and cosine similarity gave similar measurements for each answer. \\
 
