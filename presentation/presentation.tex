@@ -1,0 +1,135 @@
+\documentclass{article}
+%\documentclass[draft]{article}
+% Functions, packages, etc.
+%[[[
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{array}
+
+\usepackage{graphicx}
+%\usepackage{subfig}
+\usepackage[labelfont=bf]{caption}
+%\usepackage[labelfont=bf]{subcaption}
+\usepackage[top=1in, bottom=1in, left=1in, right=1in]{geometry}
+\pagenumbering{arabic}
+\usepackage{hyperref}
+\usepackage{enumerate}
+\usepackage{color}
+%\numberwithin{equation}{section}
+%\usepackage{soul} % for \ul - a ``better'' underlining command
+
+%\usepackage{colortbl} % for coloring \multicolumn (tabular in general, I think)
+% For \rowcolor
+%\definecolor{table_header}{gray}{0.5}
+%\definecolor{table_data}{gray}{0.85}
+
+
+%% Inserting code and syntax highlighting
+%% [[[
+%\usepackage{listings} % like verbatim, but allows for syntax highlighting and more
+%\usepackage{color} % colors
+%\usepackage[usenames,dvipsnames]{xcolor}% More colors
+%\usepackage{caption} % captions
+%\DeclareCaptionFont{white}{\color{white}}
+%\DeclareCaptionFormat{listing}{\colorbox{gray}{\parbox{\textwidth}{#1#2#3}}}
+%\captionsetup[lstlisting]{format=listing,labelfont=white,textfont=white}
+%\usepackage{framed} % put a frame around things
+%
+%% define some custom colors
+%\definecolor{dkgreen}{rgb}{0,0.6,0}
+%\definecolor{lgreen}{rgb}{0.25,1,0}
+%\definecolor{purple}{rgb}{0.35,0.02,0.48}
+%
+%% Some changes to MATLAB/GNU Octave language in listings
+%\lstset{frame=tbrl,
+%    language=Matlab,
+%    aboveskip=3mm,
+%    belowskip=3mm,
+%    belowcaptionskip=3mm,
+%    showstringspaces=false,
+%    columns=flexible,
+%    basicstyle={\small\ttfamily\color{black}},
+%    numbers=left,
+%    numberstyle=\tiny\color{purple},
+%    keywordstyle=\color{dkgreen},
+%    commentstyle=\color{red},
+%    stringstyle=\color{purple},
+%    breaklines=true,
+%    breakatwhitespace=true,
+%    tabsize=4,
+%    rulecolor=\color{black},
+%    morekeywords={string,fstream}
+%}
+%% ]]]
+
+
+%My Functions
+\newcommand{\diff}[2]{\dfrac{d #1}{d #2}}
+\newcommand{\diffn}[3]{\dfrac{d^{#3} #1}{d {#2}^{#3}}}
+\newcommand{\pdiff}[2]{\dfrac{\partial #1}{\partial #2}}
+\newcommand{\pdiffn}[3]{\dfrac{\partial^{#3} #1}{\partial {#2}^{#3}}}
+\newcommand{\drm}{\mathrm{d}}
+\newcommand{\problemline}{\rule{\textwidth}{0.25mm}}
+\newcommand{\problem}[1]{\problemline\\#1\\\problemline\vspace{10pt}}
+\newcommand{\reals}{\mathbb{R}}
+\newcommand{\qline}[2]{\qbezier(#1)(#1)(#2)}
+\newcommand{\abox}[1]{\begin{center}\fbox{#1}\end{center}}
+\newcommand{\lie}{\mathcal{L}}
+\newcommand{\defeq}{\stackrel{\operatorname{def}}{=}}
+
+
+% AMS theorem stuff
+% [[[
+\newtheoremstyle{mystuff}{}{}{\itshape}{}{\bfseries}{:}{.5em}{}
+\theoremstyle{mystuff}
+\newtheorem{definition}{Definition}[section]
+\newtheorem*{definition*}{Definition}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem*{theorem*}{Theorem}
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem*{lemma*}{Lemma}
+\newtheorem*{proposition*}{Proposition}
+\newtheorem{corallary}{Corallary}
+\newtheorem*{remark}{Remark}
+
+\newtheoremstyle{myexample}{}{}{}{}{\bfseries}{:}{.5em}{}
+\theoremstyle{myexample}
+\newtheorem*{example*}{Example}
+
+
+% Stolen from http://tex.stackexchange.com/questions/8089/changing-style-of-proof
+\makeatletter \renewenvironment{proof}[1][\proofname] {\par\pushQED{\qed}\itshape\topsep6\p@\@plus6\p@\relax\trivlist\item[\hskip\labelsep\bfseries#1\@addpunct{:}]\ignorespaces}{\popQED\endtrivlist\@endpefalse} \makeatother
+
+% Stolen from http://tex.stackexchange.com/questions/12913/customizing-theorem-name
+\newtheoremstyle{named}{}{}{\itshape}{}{\bfseries}{:}{.5em}{\thmnote{#3's }#1}
+\theoremstyle{named}
+\newtheorem*{namedtheorem}{Theorem}
+% ]]]
+
+%]]]
+
+% Output Control Variables
+\def\true{1}
+\def\false{0}
+\def\figures{1}
+\def\tables{1}
+
+\setcounter{subsection}{-1}
+
+\title{Final Project - Presentation}
+\date{\small 16 December, 2015}
+\author{\normalsize Andrew Cowley (\texttt{cowleya}), James Folberth (\texttt{jafo5560}), Derek Reiersen (\texttt{dere3725}), Ben Wiley (\texttt{bewi7122)}}
+
+\begin{document}
+\maketitle
+
+We competed in the science question answering project. Here's a \href{https://www.youtube.com/watch?v=W-eg617wNO8}{link to our presentation}.  In case the link does not work, you can manually access the page via: \\
+\begin{center}
+ \texttt{https://www.youtube.com/watch?v=W-eg617wNO8}
+\end{center}
+\end{document}
+
+% vim: set spell:
+% vim: foldmarker=[[[,]]]
